@@ -53,8 +53,8 @@ module.exports = function(grunt) {
 			size: ""
 		};
 		parseString(srcSvg, function (err, result) {
-			obj.width = result.svg.$.width;
-			obj.height = result.svg.$.height;
+			obj.width = result.svg.$.width.indexOf('px') > -1 ? result.svg.$.width : result.svg.$.width + "px";
+			obj.height = result.svg.$.height.indexOf('px') > -1 ? result.svg.$.height : result.svg.$.height + "px";
 		});
 		if(obj.width && obj.height) {
 			data.resultItemVars += grunt.template.process(data.template.itemVarsTemplate, {data: obj});
@@ -126,8 +126,10 @@ module.exports = function(grunt) {
 			filesFallback.forEach(function(file, i) {
 				pngToTemplate(file, fallbackData);
 			});
-			fallbackData.resultGeneral = grunt.template.process(fallbackData.template.generalTemplate, {data: fallbackData.generalObj});
-			grunt.file.write(options.fallback.destFile, fallbackData.resultGeneral + "\n\n" + fallbackData.resultAllItems);
+			if(filesFallback.length !== 0) {
+				fallbackData.resultGeneral = grunt.template.process(fallbackData.template.generalTemplate, {data: fallbackData.generalObj});
+				grunt.file.write(options.fallback.destFile, fallbackData.resultGeneral + "\n\n" + fallbackData.resultAllItems);
+			}
 
 
 		}
@@ -173,7 +175,7 @@ module.exports = function(grunt) {
 				}
 
 			}.bind(this));
-			if(options.svg) {
+			if(options.svg && filesSvg.length !== 0) {
 				svgData.resultAllItems = grunt.template.process(svgData.template.allItemsTemplate, {data: {allClasses: svgData.allClasses}});
 				grunt.file.write(options.svg.destFile, svgData.resultItemVars + "\n" + svgData.resultItem + svgData.resultAllItems + "\n\n");
 			}
