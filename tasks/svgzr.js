@@ -40,16 +40,16 @@ module.exports = function(grunt) {
 				}
 			});
 		}
-	}
+	};
 	var svgToTemplate = function(file, options, data) {
 		var srcSvg = grunt.file.read(file.src[0]);
 		var baseName =  path.basename(file.src[0]);
-		while (path.extname(baseName)!= ''){
-			baseName = path.basename(baseName, path.extname(baseName))
+		while (path.extname(baseName)!== ''){
+			baseName = path.basename(baseName, path.extname(baseName));
 		}
 		var obj = {
 			className: options.prefix + baseName,
-			base64: Buffer(srcSvg).toString('base64'),
+			base64: new Buffer(srcSvg).toString('base64'),
 			size: ""
 		};
 		parseString(srcSvg, function (err, result) {
@@ -58,13 +58,13 @@ module.exports = function(grunt) {
 		});
 		if(obj.width && obj.height) {
 			data.resultItemVars += grunt.template.process(data.template.itemVarsTemplate, {data: obj});
-			obj.size = grunt.template.process(data.template.sizeTemplate, {data: obj})
+			obj.size = grunt.template.process(data.template.sizeTemplate, {data: obj});
 		}
 //		data.allClasses += ((i===0) ? "" : ", ") + "." + obj.className;
 		data.allClasses += "." + obj.className;
 		data.resultItem += grunt.template.process(data.template.itemTemplate, {data: obj});
 		console.log('template in base64 created from \"'+file.src[0]+'\"');
-	}
+	};
 	var pngToTemplate = function(file, data) {
 		var baseName =  path.basename(file, data.generalObj.ext);
 		var obj = {
@@ -73,7 +73,7 @@ module.exports = function(grunt) {
 			fileName: baseName
 		};
 		data.resultAllItems += grunt.template.process(data.template.itemTemplate, {data: obj}) + "\n";
-	}
+	};
 
 	grunt.registerMultiTask('svgzr', 'Convert svg to png, and create templates for sass and compass with base64 svg and png.', function() {
 		// Merge task-specific and/or target-specific options with these defaults.
@@ -117,7 +117,7 @@ module.exports = function(grunt) {
 					ext: '.png',
 					mixinName: options.fallback.mixinName
 				}
-			}
+			};
 
 			var filesFallback = grunt.file.expand({
 				cwd: options.files.cwdPng
@@ -141,7 +141,7 @@ module.exports = function(grunt) {
 				resultAllItems : "",
 				allClasses: "",
 				template: templateFile.svg
-			}
+			};
 			var filesSvg = grunt.file.expandMapping(['*.svg'], options.files.cwdPng, {
 				cwd: options.files.cwdSvg,
 				ext: '.png',
