@@ -25,11 +25,34 @@ module.exports = function(grunt) {
 
     // Before generating any new files, remove any previously-created files.
     clean: {
-      tests: ['tmp']
+      tests: ['tmp', 'example/sass']
     },
 
     // Configuration to be run (and then tested).
     svgzr: {
+		dist: {
+			options: {
+				templateFile: 'example/template.json',
+				files: {
+					cwdSvg: 'example/icons/svg/',
+					cwdPng: "example/sprite/fallback/"
+				},
+				prefix: 'svg-',
+				svg: {
+					destFile: 'example/sass/common/_icons.scss'
+				},
+				png: true,
+//					png: {
+//						type: 'svg2png'
+//					},
+				fallback : {
+					mixinName: 'svg-fallback',
+					dir: 'fallback/',
+					destFile: 'example/sass/common/_icons-fallback.scss'
+				}
+
+			}
+		},
       default_options: {
         options: {
         },
@@ -65,7 +88,7 @@ module.exports = function(grunt) {
 
   // Whenever the "test" task is run, first clean the "tmp" dir, then run this
   // plugin's task(s), then test the result.
-  grunt.registerTask('test', ['clean', 'svgzr', 'nodeunit']);
+  grunt.registerTask('test', ['clean', 'svgzr:dist', 'nodeunit']);
 
   // By default, lint and run all tests.
   grunt.registerTask('default', ['jshint', 'test']);
