@@ -53,10 +53,13 @@ module.exports = function(grunt) {
 			size: ""
 		};
 		parseString(srcSvg, function (err, result) {
-			obj.width = result.svg.$.width.indexOf('px') > -1 ? result.svg.$.width : result.svg.$.width + "px";
-			obj.height = result.svg.$.height.indexOf('px') > -1 ? result.svg.$.height : result.svg.$.height + "px";
+			obj.width = result.svg.$.width;
+			obj.height = result.svg.$.height;
 		});
 		if(obj.width && obj.height) {
+			obj.width = (obj.width.indexOf('px') > -1) ? obj.width : obj.width + "px";
+			obj.height = (obj.height.indexOf('px') > -1) ? obj.height : obj.height + "px";
+
 			data.resultItemVars += grunt.template.process(data.template.itemVarsTemplate, {data: obj});
 			obj.size = grunt.template.process(data.template.sizeTemplate, {data: obj});
 		}
@@ -98,7 +101,29 @@ module.exports = function(grunt) {
 			options.png.type = "svg2png";
 		}
 
-		var templateFile = grunt.file.readJSON(options.templateFile);
+		var templateFile;
+		if(grunt.file.isFile(options.templateFile)) {
+			templateFile = grunt.file.readJSON(options.templateFile);
+		}
+		else {
+			templateFile = {
+				"svg" : {
+					"generalVarsTemplate": "",
+					"itemVarsTemplate": "$<%= className %>-width: <%= width %>;\n$<%= className %>-height: <%= height %>;\n",
+					"generalTemplate": "",
+					"itemTemplate": ".<%= className %> {\n\tbackground-image: url('data:image/svg+xml;base64,<%= base64 %>');\n<%= size %>}\n\n",
+					"allItemsTemplate": "<%= allClasses %> {\n\tbackground-repeat: no-repeat;\n}",
+					"sizeTemplate": "\twidth: $<%= className %>-width;\n\theight: $<%= className %>-height;\n"
+				},
+				"fallback" : {
+					"generalVarsTemplate": "",
+					"itemVarsTemplate": "",
+					"generalTemplate": "@import 'compass/utilities/sprites';\n@import '<%= dir %>*<%= ext %>';\n\n// Helper for svg fallbacks (ie8 and lower/unsupported browsers)\n@mixin <%= mixinName %>($fileName){\n\t.no-svg &, .ielt9 & {\n\t\t@include <%= lastDir %>-sprite($fileName);\n\t\twidth: <%= lastDir %>-sprite-width($fileName);\n\t\theight: <%= lastDir %>-sprite-height($fileName);\n\t}\n}\n",
+					"itemTemplate": ".<%= className %> {\n\t@include <%= mixinName %>(<%= fileName %>);\n}\n",
+					"allItemsTemplate": ""
+				}
+			};
+		}
 
 		if(options.fallback) {
 			var fallbackData = {
