@@ -24,14 +24,28 @@ In your project's Gruntfile, add a section named `svgzr` to the data object pass
 
 ```js
 grunt.initConfig({
-  svgzr: {
-    options: {
-      // Task-specific options go here.
-    },
-    your_target: {
-      // Target-specific file lists and/or options go here.
-    },
-  },
+	svgzr: {
+		dist: {
+			options: {
+				templateFile: 'template.json',
+				files: {
+					cwdSvg: 'icons/svg/',
+					cwdPng: "sprite/fallback/"
+				},
+				prefix: 'svg-',
+				svg: {
+					destFile: 'sass/common/_icons.scss'
+				},
+				png: true,
+				fallback : {
+					mixinName: 'svg-fallback',
+					dir: 'fallback/',
+					destFile: 'sass/common/_icons-fallback.scss'
+				}
+
+			}
+		}
+	}
 });
 ```
 
