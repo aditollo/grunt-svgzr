@@ -174,7 +174,7 @@ module.exports = function(grunt) {
 		var options = this.options({
 			templateFile: 'template.json',
 			files: {
-				cwdSvg: 'svgMin/',
+				cwdSvg: 'svg/',
 				cwdPng: "png/"
 			},
 			prefix: 'svg-',

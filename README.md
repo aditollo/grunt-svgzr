@@ -42,7 +42,6 @@ grunt.initConfig({
 					dir: 'fallback/',
 					destFile: 'sass/common/_icons-fallback.scss'
 				}
-
 			}
 		}
 	}
@@ -51,53 +50,173 @@ grunt.initConfig({
 
 ### Options
 
-#### options.separator
+#### options.templateFile
 Type: `String`
-Default value: `',  '`
+Default value: Use a standard internal template.
 
-A string value that is used to do something with whatever.
+The path of the template file used to create the svg and png scss files.
 
-#### options.punctuation
+#### options.files.cwdSvg
 Type: `String`
-Default value: `'.'`
+Default value: `'svg/'`
 
-A string value that is used to do something else with whatever else.
+The path of svg files for for the conversion from svg to png.
+
+#### options.files.cwdPng
+Type: `String`
+Default value: `'png/'`
+
+The path of png files for the conversion from svg to png and for the scss file with png fallbacks.
+
+#### options.prefix
+Type: `String`
+Default value: `'svg-'`
+
+A string used as prefix in css classes
+
+#### options.svg
+Type: `object`
+Default value: `false`
+
+If `false`, the plugin will not proceed with the creation of the scss file with svg classes.
+
+#### options.svg.destFile
+Type: `String`
+Default value: `'example/sass/common/_icons.scss'`
+
+The output scss file with svg classes.
+
+#### options.png
+Type: `object`
+Default value: `false`
+
+If `false`, the plugin will not proceed with the conversion from svg to png files.
+
+#### options.png.type
+Type: `String`
+Default value: `'svg2png'`
+
+The libraries that you want to use for the conversion from svg to png. By default svgzr will use [svg2png](https://www.npmjs.org/package/svg2png) and phantomJS, but you can set `'gm'` for GraphicsMagick (you have to install [GraphicsMagick](http://www.graphicsmagick.org/)), or `'im'` for ImageMagick (you have to install [ImageMagick](http://www.imagemagick.org/))
+
+#### options.fallback
+Type: `object`
+Default value: `false`
+
+If `false`, the plugin will not proceed with the creation of the scss file with png classes.
+
+#### options.fallback.mixinName
+Type: `String`
+Default value: `'svg-fallback'`
+
+The name of the mixin that you want to use in the scss file with png classes
+
+#### options.fallback.dir
+Type: `String`
+Default value: `'fallback/'`
+
+The path of png files relative to the scss file with png classes. It will be used from compass to create the png sprite file.
+
+#### options.fallback.destFile
+Type: `String`
+Default value: `'example/sass/common/_icons-fallback.scss'`
+
+The output scss file with png classes.
 
 ### Usage Examples
 
 #### Default Options
-In this example, the default options are used to do something with whatever. So if the `testing` file has the content `Testing` and the `123` file had the content `1 2 3`, the generated result would be `Testing, 1 2 3.`
-
+By default, svgzr does not create any output.
 ```js
 grunt.initConfig({
-  svgzr: {
-    options: {},
-    files: {
-      'dest/default_options': ['src/testing', 'src/123'],
-    },
-  },
+	svgzr: {
+		dist: {
+			options: {}
+		}
+	}
+});
+```
+is equal to the following
+```js
+grunt.initConfig({
+	svgzr: {
+		dist: {
+			options: {
+				svg: false,
+				png: false,
+				fallback : false
+			}
+		}
+	}
 });
 ```
 
-#### Custom Options
-In this example, custom options are used to do something else with whatever else. So if the `testing` file has the content `Testing` and the `123` file had the content `1 2 3`, the generated result in this case would be `Testing: 1 2 3 !!!`
+#### ONLY SCSS FILE WITH SVG CLASSES
 
+In this example, svgzr wil get all svg files in `cwdSvg` path, encode them in base64, and embed them in a scss file, using the filename and the `prefix` for the class name.
 ```js
 grunt.initConfig({
-  svgzr: {
-    options: {
-      separator: ': ',
-      punctuation: ' !!!',
-    },
-    files: {
-      'dest/default_options': ['src/testing', 'src/123'],
-    },
-  },
+	svgzr: {
+		dist: {
+			options: {
+				templateFile: 'template.json',
+				files: {
+					cwdSvg: 'icons/svg/',
+				},
+				prefix: 'svg-',
+				svg: {
+					destFile: 'sass/common/_icons.scss'
+				}
+			}
+		}
+	}
 });
 ```
 
-## Contributing
-In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com/).
+#### ONLY SCSS FILE WITH PNG CLASSES
+
+In this example, svgzr wil get all png files in `cwdPng` path, and create a scss file that use the filename and the `prefix` for the class name.
+This file will be used from compass to create a sprite file and png fallbacks.
+
+```js
+grunt.initConfig({
+	svgzr: {
+		dist: {
+			options: {
+				templateFile: 'template.json',
+				files: {
+					cwdSvg: 'icons/svg/',
+				},
+				prefix: 'svg-',
+				svg: {
+					destFile: 'sass/common/_icons.scss'
+				}
+			}
+		}
+	}
+});
+```
+
+#### ONLY SVG TO PNG CONVERSION
+
+In this example, svgzr wil get all svg files in `cwdSvg` path, convert them in png, and store png files in `cwdPng`.
+```js
+grunt.initConfig({
+	svgzr: {
+		dist: {
+			options: {
+				files: {
+					cwdSvg: 'icons/svg/',
+					cwdPng: "sprite/fallback/"
+				},
+				png: true
+			}
+		}
+	}
+});
+```
 
 ## Release History
-_(Nothing yet)_
+
+0.1.0	intial release
+0.1.1	resolved async problem
+0.1.2	minor fixes
