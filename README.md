@@ -184,11 +184,13 @@ grunt.initConfig({
 			options: {
 				templateFile: 'template.json',
 				files: {
-					cwdSvg: 'icons/svg/',
+					cwdPng: "sprite/fallback/"
 				},
 				prefix: 'svg-',
-				svg: {
-					destFile: 'sass/common/_icons.scss'
+				fallback : {
+					mixinName: 'svg-fallback',
+					dir: 'fallback/',
+					destFile: 'sass/common/_icons-fallback.scss'
 				}
 			}
 		}
