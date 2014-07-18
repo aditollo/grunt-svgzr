@@ -34,16 +34,16 @@
 				options: {
 					files: {
 						cwdSvg: 'test/fixtures/svg/',
-						cwdPng: "test/expected/png/"  //  output o input?
+						cwdPng: "test/result/png/"
 					},
 					svg: {
-						destFile: 'test/expected/_svg.scss' //  output o input?
+						destFile: 'test/result/_svg.scss'
 					},
 					png: true,
 					fallback : {
 						mixinName: 'svg-fallback',
 						dir: 'fallback/',
-						destFile: 'test/expected/_svg-fallback.scss'
+						destFile: 'test/result/_svg-fallback.scss'
 					}
 				}
 		}
@@ -62,11 +62,11 @@
 	// These plugins provide necessary tasks.
 	grunt.loadNpmTasks('grunt-contrib-jshint');
 	grunt.loadNpmTasks('grunt-contrib-clean');
-	//grunt.loadNpmTasks('grunt-contrib-nodeunit');
+	grunt.loadNpmTasks('grunt-contrib-nodeunit');
 
 	// Whenever the "test" task is run, first clean the "tmp" dir, then run this
 	// plugin's task(s), then test the result.
-	grunt.registerTask('test', ['clean', 'svgzr:test']);
+	grunt.registerTask('test', ['clean', 'svgzr:test', 'nodeunit']);
 
 	// By default, lint and run all tests.
 	grunt.registerTask('default', ['jshint', 'test']);

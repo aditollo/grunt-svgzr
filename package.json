@@ -34,8 +34,6 @@
   },
   "peerDependencies": {
 	  "grunt": "~0.4.5"
-
-
   },
 	"dependencies": {
 	  "each-async": "^0.1.3",
