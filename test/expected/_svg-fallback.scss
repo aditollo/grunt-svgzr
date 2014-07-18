@@ -1,0 +1,17 @@
+@import 'compass/utilities/sprites';
+@import 'fallback/*.png';
+
+// Helper for svg fallbacks (ie8 and lower/unsupported browsers)
+@mixin svg-fallback($fileName){
+	.no-svg &, .ielt9 & {
+		@include fallback-sprite($fileName);
+		width: fallback-sprite-width($fileName);
+		height: fallback-sprite-height($fileName);
+	}
+}
+
+
+.svg-arrow {
+	@include svg-fallback(arrow);
+}
+

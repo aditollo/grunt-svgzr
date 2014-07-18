@@ -6,17 +6,17 @@
  * Licensed under the MIT license.
  */
 
-'use strict';
+ 'use strict';
 
-module.exports = function(grunt) {
+ module.exports = function(grunt) {
 
 	// Project configuration.
 	grunt.initConfig({
 		jshint: {
 			all: [
-				'Gruntfile.js',
-				'tasks/*.js',
-				'<%= nodeunit.tests %>'
+			'Gruntfile.js',
+			'tasks/*.js',
+			'<%= nodeunit.tests %>'
 			],
 			options: {
 				jshintrc: '.jshintrc'
@@ -30,50 +30,31 @@ module.exports = function(grunt) {
 
 		// Configuration to be run (and then tested).
 		svgzr: {
-			dist: {
+			test: {
 				options: {
-					templateFile: 'example/template.json',
 					files: {
-						cwdSvg: 'example/icons/svg/',
-						cwdPng: "example/sprite/fallback/"
+						cwdSvg: 'test/fixtures/svg/',
+						cwdPng: "test/result/png/"
 					},
-					prefix: 'svg-',
 					svg: {
-						destFile: 'example/sass/common/_icons.scss'
+						destFile: 'test/result/_svg.scss'
 					},
 					png: true,
 					fallback : {
 						mixinName: 'svg-fallback',
 						dir: 'fallback/',
-						destFile: 'example/sass/common/_icons-fallback.scss'
+						destFile: 'test/result/_svg-fallback.scss'
 					}
-
 				}
-			},
-			default_options: {
-				options: {
-				},
-				files: {
-					'tmp/default_options': ['test/fixtures/testing', 'test/fixtures/123']
-				}
-			},
-			custom_options: {
-				options: {
-					separator: ': ',
-					punctuation: ' !!!'
-				},
-				files: {
-					'tmp/custom_options': ['test/fixtures/testing', 'test/fixtures/123']
-				}
-			}
-		},
+		}
+	},
 
 		// Unit tests.
 		nodeunit: {
 			tests: ['test/*_test.js']
 		}
 
-	});
+	});	
 
 	// Actually load this plugin's task(s).
 	grunt.loadTasks('tasks');
@@ -85,8 +66,7 @@ module.exports = function(grunt) {
 
 	// Whenever the "test" task is run, first clean the "tmp" dir, then run this
 	// plugin's task(s), then test the result.
-//  grunt.registerTask('test', ['clean', 'svgzr:dist', 'nodeunit']);
-	grunt.registerTask('test', ['clean', 'svgzr:dist']);
+	grunt.registerTask('test', ['clean', 'svgzr:test', 'nodeunit']);
 
 	// By default, lint and run all tests.
 	grunt.registerTask('default', ['jshint', 'test']);
