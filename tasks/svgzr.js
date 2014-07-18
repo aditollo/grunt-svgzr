@@ -12,6 +12,8 @@ module.exports = function(grunt) {
 
 	// Please see the Grunt documentation for more information regarding task
 	// creation: http://gruntjs.com/creating-tasks
+	grunt.file.defaultEncoding = 'utf8';
+	grunt.file.preserveBOM = false;
 
 	var gm = require('gm');
 	var svg2png = require('svg2png');
