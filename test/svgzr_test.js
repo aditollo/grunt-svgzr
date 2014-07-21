@@ -26,14 +26,17 @@ exports.svgzr = {
 	setUp: function(done) {
 		
 		this.fixtures = {
-			svgFolder : 'test/fixtures/svg/*.svg'
+			svgFolder : 'test/fixtures/svg/*.svg',
+			svgClassPrefix: '.svg-'
 		};
+
+		this.fixtures.svgFiles = grunt.file.expand(this.fixtures.svgFolder);
 
 		this.results = {
 				svg : 'test/result/_svg.scss',
 				pngFolder: 'test/result/png/',
 				fallback: 'test/result/_svg-fallback.scss'
-			};
+		};
 		done();
 	},
 	generated_svg: function(test) {
@@ -47,22 +50,38 @@ exports.svgzr = {
 		test.done();
 	},
 	generated_fallback: function(test) {
+		
 		test.expect(1);
 
 		test.ok(grunt.file.exists(this.results.fallback), 'Fallback file created');
 
 		test.done();
 	},
+	generated_fallback_contains_classes: function(test) {
+
+		var svgClassPrefix = this.fixtures.svgClassPrefix;
+		var fallback = grunt.file.read(this.results.fallback);
+
+		test.expect(this.fixtures.svgFiles.length);
+
+		this.fixtures.svgFiles.forEach(function(path) {
+			var split = path.split('/');
+			var classname = svgClassPrefix + split[split.length - 1].replace(/.svg$/, '');
+
+			test.ok(fallback.indexOf(classname) >= 0, 'For each svg there should be a fallback mixin with the same name');
+		});
+
+		test.done();
+	},
 	generated_png: function(test) {
-		var svgs = grunt.file.expand(this.fixtures.svgFolder);
 		var pngFolder = this.results.pngFolder;
 
-		test.expect(2 + svgs.length);
+		test.expect(2 + this.fixtures.svgFiles.length);
 
 		test.ok(grunt.file.exists(this.results.pngFolder), 'Png dir created');
 		test.ok(grunt.file.isDir(this.results.pngFolder), 'Png dir is actually a dir');
 
-		svgs.forEach(function(path) {
+		this.fixtures.svgFiles.forEach(function(path) {
 			var split = path.split('/');
 			var file = split[split.length - 1].replace(/.svg$/, '.png');
 
