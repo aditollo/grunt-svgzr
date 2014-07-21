@@ -43,10 +43,23 @@ exports.svgzr = {
 		test.expect(1);
 
 		test.ok(grunt.file.exists(this.results.svg), 'SVG Mixin file created');
-		//var actual = grunt.file.read(svgResultFile);
-		//var expected = grunt.file.read('test/expected/_svg.scss');
 
-		//test.equal(actual, expected, 'The generated svg sass styles should be as expected');
+		test.done();
+	},
+	generated_svg_contains_classes: function(test) {
+
+		var svgClassPrefix = this.fixtures.svgClassPrefix;
+		var svgFile = grunt.file.read(this.results.svg);
+
+		test.expect(this.fixtures.svgFiles.length);
+
+		this.fixtures.svgFiles.forEach(function(path) {
+			var split = path.split('/');
+			var classname = svgClassPrefix + split[split.length - 1].replace(/.svg$/, '');
+
+			test.ok(svgFile.indexOf(classname) >= 0, 'For each svg there should be a svg mixin with the same name');
+		});
+
 		test.done();
 	},
 	generated_fallback: function(test) {

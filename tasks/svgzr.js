@@ -21,6 +21,10 @@ module.exports = function(grunt) {
 	var eachAsync = require('each-async');
 	var parseString = require('xml2js').parseString;
 
+	var putPx = function(dimension) {
+		return dimension.indexOf('px') > -1 ? dimension : dimension + "px";
+	}
+
 	var svgToPng = function(file, data) {
 		var srcPath = file.src[0];
 		if(data.type === "im" || data.type === "gm") {
@@ -62,13 +66,12 @@ module.exports = function(grunt) {
 			obj.height = result.svg.$.height;
 		});
 		if(obj.width && obj.height) {
-			obj.width = (obj.width.indexOf('px') > -1) ? obj.width : obj.width + "px";
-			obj.height = (obj.height.indexOf('px') > -1) ? obj.height : obj.height + "px";
+			obj.width = putPx(obj.width);
+			obj.height = putPx(obj.height);
 
 			data.resultItemVars += grunt.template.process(data.template.itemVarsTemplate, {data: obj});
 			obj.size = grunt.template.process(data.template.sizeTemplate, {data: obj});
 		}
-//		data.allClasses += ((i===0) ? "" : ", ") + "." + obj.className;
 		data.allClasses += "." + obj.className;
 		data.resultItem += grunt.template.process(data.template.itemTemplate, {data: obj});
 		grunt.log.writeln('template in base64 created from \"'+file.src[0]+'\"');
@@ -126,7 +129,7 @@ module.exports = function(grunt) {
 				grunt.file.write(options.svg.destFile, svgData.resultItemVars + "\n" + svgData.resultItem + svgData.resultAllItems + "\n\n");
 			}
 			if(options.fallback) {
-				secondCycle(options);
+				createFallback(options);
 			}
 			else {
 				options.done();
@@ -135,7 +138,7 @@ module.exports = function(grunt) {
 		});
 
 	};
-	var secondCycle = function(options) {
+	var createFallback = function(options) {
 		var fallbackData = {
 			resultItemVars : "",
 			resultGeneral : "",
@@ -145,9 +148,7 @@ module.exports = function(grunt) {
 			template: options.templateFile.fallback,
 			generalObj : {
 				prefix: options.prefix,
-//                    dir: path.relative(path.basename(options.fallback.destfile), options.files.cwdPng),
 				dir: options.fallback.dir,
-//                    lastDir: path.basename(options.files.cwdPng),
 				lastDir: path.basename(options.fallback.dir),
 				ext: '.png',
 				mixinName: options.fallback.mixinName
@@ -221,7 +222,7 @@ module.exports = function(grunt) {
 			firstCycle(options);
 		}
 		else if(options.fallback) {
-			secondCycle(options);
+			createFallback(options);
 		}
 		else {
 			options.done();
