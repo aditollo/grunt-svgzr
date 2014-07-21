@@ -71,7 +71,7 @@ module.exports = function(grunt) {
 //		data.allClasses += ((i===0) ? "" : ", ") + "." + obj.className;
 		data.allClasses += "." + obj.className;
 		data.resultItem += grunt.template.process(data.template.itemTemplate, {data: obj});
-		console.log('template in base64 created from \"'+file.src[0]+'\"');
+		grunt.log.writeln('template in base64 created from \"'+file.src[0]+'\"');
 	};
 	var pngToTemplate = function(file, data) {
 		var baseName =  path.basename(file, data.generalObj.ext);
@@ -122,7 +122,7 @@ module.exports = function(grunt) {
 		}, function(err){
 			if(options.svg && filesSvg.length !== 0) {
 				svgData.resultAllItems = grunt.template.process(svgData.template.allItemsTemplate, {data: {allClasses: svgData.allClasses}});
-				console.log("Writing svg template.");
+				grunt.log.writeln("Writing svg template.");
 				grunt.file.write(options.svg.destFile, svgData.resultItemVars + "\n" + svgData.resultItem + svgData.resultAllItems + "\n\n");
 			}
 			if(options.fallback) {
@@ -163,7 +163,7 @@ module.exports = function(grunt) {
 		});
 		if(filesFallback.length !== 0) {
 			fallbackData.resultGeneral = grunt.template.process(fallbackData.template.generalTemplate, {data: fallbackData.generalObj});
-			console.log("Writing png fallback template.");
+			grunt.log.writeln("Writing png fallback template.");
 			grunt.file.write(options.fallback.destFile, fallbackData.resultGeneral + "\n\n" + fallbackData.resultAllItems);
 		}
 		options.done();
