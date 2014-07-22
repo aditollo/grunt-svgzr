@@ -219,6 +219,7 @@ grunt.initConfig({
 
 ## Release History
 
-0.1.0	intial release
-0.1.1	resolved async problem
 0.1.2	minor fixes
+		added some tests
+0.1.1	resolved async problem
+0.1.0	intial release
