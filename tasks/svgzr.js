@@ -122,6 +122,9 @@ module.exports = function(grunt) {
 				}
 				svgToPng(file, {type: options.png.type, converter: converter, next: next});
 			}
+			else {
+				next();
+			}
 		}, function(err){
 			if(options.svg && filesSvg.length !== 0) {
 				svgData.resultAllItems = grunt.template.process(svgData.template.allItemsTemplate, {data: {allClasses: svgData.allClasses}});
