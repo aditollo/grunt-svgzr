@@ -8,6 +8,8 @@
 
 'use strict';
 
+
+
 module.exports = function(grunt) {
 
 	// Please see the Grunt documentation for more information regarding task
@@ -15,7 +17,7 @@ module.exports = function(grunt) {
 	grunt.file.defaultEncoding = 'utf8';
 	grunt.file.preserveBOM = false;
 
-	var gm = require('gm');
+
 	var svg2png = require('svg2png');
 	var path = require('path');
 	var eachAsync = require('each-async');
@@ -23,33 +25,23 @@ module.exports = function(grunt) {
 
 	var putPx = function(dimension) {
 		return dimension.indexOf('px') > -1 ? dimension : dimension + "px";
-	}
-
-	var svgToPng = function(file, data) {
-		var srcPath = file.src[0];
-		if(data.type === "im" || data.type === "gm") {
-			data.converter(srcPath).write(file.dest, function (err) {
-				if( err ){
-					grunt.fatal( err );
-				}
-				else {
-					grunt.log.writeln('image converted from \"' + srcPath + '\" to \"' + file.dest + '\".');
-				}
-				data.next();
-			});
-		}
-		else if(data.type === "svg2png") {
-			svg2png(srcPath, file.dest, function (err) {
-				if( err ){
-					grunt.fatal( err );
-				}
-				else {
-					grunt.log.writeln('image converted from \"' + srcPath + '\" to \"' + file.dest + '\".');
-				}
-				data.next();
-			});
-		}
 	};
+
+	var svgToPng = function(file, callback) {
+		var srcPath = file.src[0];
+
+		svg2png(srcPath, file.dest, function (err) {
+			if( err ){
+				grunt.fatal( err );
+			}
+			else {
+				grunt.log.writeln('image converted from \"' + srcPath + '\" to \"' + file.dest + '\".');
+			}
+			callback();
+		});
+
+	};
+
 	var svgToTemplate = function(file, options, data) {
 		var srcSvg = grunt.file.read(file.src[0]);
 		var baseName =  path.basename(file.src[0]);
@@ -81,13 +73,17 @@ module.exports = function(grunt) {
 		var obj = {
 			className: data.generalObj.prefix + baseName,
 			mixinName: data.generalObj.mixinName,
+			dir: data.generalObj.dir,
+			lastDir: data.generalObj.lastDir,
 			fileName: baseName
 		};
+		data.resultItemVars += grunt.template.process(data.template.itemVarsTemplate, {data: obj});
 		data.resultAllItems += grunt.template.process(data.template.itemTemplate, {data: obj}) + "\n";
 	};
 	var firstCycle = function(options) {
 		var converter = null;
 		var svgData = {
+			resultImports : "",
 			resultItemVars : "",
 			resultGeneral : "",
 			resultItem : "",
@@ -108,25 +104,18 @@ module.exports = function(grunt) {
 			}
 
 			// svg to png
-			if(options.png !== false && (options.png.type === 'gm' || options.png.type === 'im' || options.png.type === 'svg2png')) {
-				if(options.png.type === 'gm' || options.png.type === 'im') {
-					converter = gm;
-					grunt.file.mkdir(options.files.cwdPng);
-					if(options.png.type === 'im') {
-						converter = converter.subClass({ imageMagick: true });
-					}
-
-				}
-				else if(options.png.type === 'svg2png') {
-					converter = svg2png;
-				}
-				svgToPng(file, {type: options.png.type, converter: converter, next: next});
+			if(options.png) {
+				svgToPng(file, next);
+			}
+			else {
+				next();
 			}
 		}, function(err){
 			if(options.svg && filesSvg.length !== 0) {
+				svgData.resultImports = grunt.template.process(svgData.template.importsTemplate, {data: {allClasses: svgData.allClasses}});
 				svgData.resultAllItems = grunt.template.process(svgData.template.allItemsTemplate, {data: {allClasses: svgData.allClasses}});
 				grunt.log.writeln("Writing svg template.");
-				grunt.file.write(options.svg.destFile, svgData.resultItemVars + "\n" + svgData.resultItem + svgData.resultAllItems + "\n\n");
+				grunt.file.write(options.svg.destFile, svgData.resultImports +  svgData.resultItemVars + "\n" + svgData.resultItem + svgData.resultAllItems + "\n\n");
 			}
 			if(options.fallback) {
 				createFallback(options);
@@ -140,6 +129,7 @@ module.exports = function(grunt) {
 	};
 	var createFallback = function(options) {
 		var fallbackData = {
+			resultImports : "",
 			resultItemVars : "",
 			resultGeneral : "",
 			resultItem : "",
@@ -163,16 +153,16 @@ module.exports = function(grunt) {
 			pngToTemplate(file, fallbackData);
 		});
 		if(filesFallback.length !== 0) {
+			fallbackData.resultImports = grunt.template.process(fallbackData.template.importsTemplate, {data: fallbackData.generalObj});
 			fallbackData.resultGeneral = grunt.template.process(fallbackData.template.generalTemplate, {data: fallbackData.generalObj});
 			grunt.log.writeln("Writing png fallback template.");
-			grunt.file.write(options.fallback.destFile, fallbackData.resultGeneral + "\n\n" + fallbackData.resultAllItems);
+			grunt.file.write(options.fallback.destFile, fallbackData.resultImports + fallbackData.resultItemVars + "\n" + fallbackData.resultGeneral + "\n\n" + fallbackData.resultAllItems);
 		}
 		options.done();
 	};
 
 	grunt.registerMultiTask('svgzr', 'Convert svg to png, and create templates for sass and compass with base64 svg and png.', function() {
 		// Merge task-specific and/or target-specific options with these defaults.
-//		var done = this.async();
 
 		var options = this.options({
 			templateFile: 'template.json',
@@ -186,12 +176,6 @@ module.exports = function(grunt) {
 			png: false
 
 		});
-		if(options.png === true) {
-			options.png = {};
-		}
-		if(options.png && options.png.type === undefined){
-			options.png.type = "svg2png";
-		}
 
 		if(grunt.file.isFile(options.templateFile)) {
 			options.templateFile = grunt.file.readJSON(options.templateFile);
@@ -199,6 +183,7 @@ module.exports = function(grunt) {
 		else {
 			options.templateFile = {
 				"svg" : {
+					"importsTemplate": "",
 					"generalVarsTemplate": "",
 					"itemVarsTemplate": "$<%= className %>-width: <%= width %>;\n$<%= className %>-height: <%= height %>;\n",
 					"generalTemplate": "",
@@ -207,9 +192,10 @@ module.exports = function(grunt) {
 					"sizeTemplate": "\twidth: $<%= className %>-width;\n\theight: $<%= className %>-height;\n"
 				},
 				"fallback" : {
+					"importsTemplate": "@import 'compass/utilities/sprites';\n@import '<%= dir %>*<%= ext %>';\n\n",
 					"generalVarsTemplate": "",
 					"itemVarsTemplate": "",
-					"generalTemplate": "@import 'compass/utilities/sprites';\n@import '<%= dir %>*<%= ext %>';\n\n// Helper for svg fallbacks (ie8 and lower/unsupported browsers)\n@mixin <%= mixinName %>($fileName){\n\t.no-svg &, .ielt9 & {\n\t\t@include <%= lastDir %>-sprite($fileName);\n\t\twidth: <%= lastDir %>-sprite-width($fileName);\n\t\theight: <%= lastDir %>-sprite-height($fileName);\n\t}\n}\n",
+					"generalTemplate": "// Helper for svg fallbacks (ie8 and lower/unsupported browsers)\n@mixin <%= mixinName %>($fileName){\n\t.no-svg &, .ielt9 & {\n\t\t@include <%= lastDir %>-sprite($fileName);\n\t\twidth: <%= lastDir %>-sprite-width($fileName);\n\t\theight: <%= lastDir %>-sprite-height($fileName);\n\t}\n}\n",
 					"itemTemplate": ".<%= className %> {\n\t@include <%= mixinName %>(<%= fileName %>);\n}\n",
 					"allItemsTemplate": ""
 				}
