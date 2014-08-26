@@ -91,13 +91,7 @@ The output scss file with svg classes.
 Type: `object`
 Default value: `false`
 
-If `false`, the plugin will not proceed with the conversion from svg to png files.
-
-#### options.png.type
-Type: `String`
-Default value: `'svg2png'`
-
-The libraries that you want to use for the conversion from svg to png. By default svgzr will use [svg2png](https://www.npmjs.org/package/svg2png) and phantomJS, but you can set `'gm'` for GraphicsMagick (you have to install [GraphicsMagick](http://www.graphicsmagick.org/)), or `'im'` for ImageMagick (you have to install [ImageMagick](http://www.imagemagick.org/))
+If `false`, the plugin will not proceed with the conversion from svg to png files. If true, svgzr will use [svg2png](https://www.npmjs.org/package/svg2png) and phantomJS for the conversion.
 
 #### options.fallback
 Type: `object`
