@@ -8,6 +8,8 @@
 
 'use strict';
 
+
+
 module.exports = function(grunt) {
 
 	// Please see the Grunt documentation for more information regarding task
@@ -15,7 +17,7 @@ module.exports = function(grunt) {
 	grunt.file.defaultEncoding = 'utf8';
 	grunt.file.preserveBOM = false;
 
-	var gm = require('gm');
+
 	var svg2png = require('svg2png');
 	var path = require('path');
 	var eachAsync = require('each-async');
@@ -25,31 +27,21 @@ module.exports = function(grunt) {
 		return dimension.indexOf('px') > -1 ? dimension : dimension + "px";
 	};
 
-	var svgToPng = function(file, data) {
+	var svgToPng = function(file, callback) {
 		var srcPath = file.src[0];
-		if(data.type === "im" || data.type === "gm") {
-			data.converter(srcPath).write(file.dest, function (err) {
-				if( err ){
-					grunt.fatal( err );
-				}
-				else {
-					grunt.log.writeln('image converted from \"' + srcPath + '\" to \"' + file.dest + '\".');
-				}
-				data.next();
-			});
-		}
-		else if(data.type === "svg2png") {
-			svg2png(srcPath, file.dest, function (err) {
-				if( err ){
-					grunt.fatal( err );
-				}
-				else {
-					grunt.log.writeln('image converted from \"' + srcPath + '\" to \"' + file.dest + '\".');
-				}
-				data.next();
-			});
-		}
+
+		svg2png(srcPath, file.dest, function (err) {
+			if( err ){
+				grunt.fatal( err );
+			}
+			else {
+				grunt.log.writeln('image converted from \"' + srcPath + '\" to \"' + file.dest + '\".');
+			}
+			callback();
+		});
+
 	};
+
 	var svgToTemplate = function(file, options, data) {
 		var srcSvg = grunt.file.read(file.src[0]);
 		var baseName =  path.basename(file.src[0]);
@@ -112,19 +104,11 @@ module.exports = function(grunt) {
 			}
 
 			// svg to png
-			if(options.png !== false && (options.png.type === 'gm' || options.png.type === 'im' || options.png.type === 'svg2png')) {
-				if(options.png.type === 'gm' || options.png.type === 'im') {
-					converter = gm;
-					grunt.file.mkdir(options.files.cwdPng);
-					if(options.png.type === 'im') {
-						converter = converter.subClass({ imageMagick: true });
-					}
-
-				}
-				else if(options.png.type === 'svg2png') {
-					converter = svg2png;
-				}
-				svgToPng(file, {type: options.png.type, converter: converter, next: next});
+			if(options.png) {
+				svgToPng(file, next);
+			}
+			else {
+				next();
 			}
 			else {
 				next();
@@ -182,7 +166,6 @@ module.exports = function(grunt) {
 
 	grunt.registerMultiTask('svgzr', 'Convert svg to png, and create templates for sass and compass with base64 svg and png.', function() {
 		// Merge task-specific and/or target-specific options with these defaults.
-//		var done = this.async();
 
 		var options = this.options({
 			templateFile: 'template.json',
@@ -196,12 +179,6 @@ module.exports = function(grunt) {
 			png: false
 
 		});
-		if(options.png === true) {
-			options.png = {};
-		}
-		if(options.png && options.png.type === undefined){
-			options.png.type = "svg2png";
-		}
 
 		if(grunt.file.isFile(options.templateFile)) {
 			options.templateFile = grunt.file.readJSON(options.templateFile);

@@ -1,6 +1,7 @@
 # grunt-svgzr
-
 > Convert svg to png, and create templates for sass and compass with base64 svg and png.
+
+[![Build Status](https://travis-ci.org/aditollo/grunt-svgzr.svg?branch=master)](https://travis-ci.org/aditollo/grunt-svgzr)
 
 ## Getting Started
 This plugin requires Grunt `~0.4.5`
