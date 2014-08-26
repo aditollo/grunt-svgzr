@@ -110,9 +110,6 @@ module.exports = function(grunt) {
 			else {
 				next();
 			}
-			else {
-				next();
-			}
 		}, function(err){
 			if(options.svg && filesSvg.length !== 0) {
 				svgData.resultImports = grunt.template.process(svgData.template.importsTemplate, {data: {allClasses: svgData.allClasses}});
