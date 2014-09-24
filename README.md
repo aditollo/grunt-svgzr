@@ -214,6 +214,8 @@ grunt.initConfig({
 
 ## Release History
 
+0.1.5	Removed im and gm; minor fixes.
+
 0.1.4	Fix templates.
 
 0.1.3	Solved problem with only svg option active.
