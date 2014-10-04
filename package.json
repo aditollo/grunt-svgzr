@@ -1,7 +1,7 @@
 {
   "name": "grunt-svgzr",
   "description": "Convert svg to png, and create templates for sass and compass with base64 svg and png.",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "homepage": "https://github.com/aditollo/grunt-svgzr",
   "author": {
     "name": "aditollo",
