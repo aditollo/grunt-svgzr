@@ -1,0 +1,19 @@
+@import 'compass/utilities/sprites';
+@import '{{&dir}}*{{ext}}';
+
+// Helper for svg fallbacks (ie8 and lower/unsupported browsers)
+@mixin {{mixinName}}($fileName){
+	.no-svg &, .ielt9 & {
+		@include {{lastDir}}-sprite($fileName);
+		width: {{lastDir}}-sprite-width($fileName);
+		height: {{lastDir}}-sprite-height($fileName);
+	}
+}
+
+
+{{#items}}
+.{{className}} {
+    @include {{mixinName}}({{fileName}});
+}
+
+{{/items}}

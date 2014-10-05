@@ -81,15 +81,19 @@ module.exports = function(grunt) {
 		data.resultItem += grunt.template.process(data.template.itemTemplate, {data: obj});
 		grunt.log.writeln('template in base64 created from \"'+file.src[0]+'\"');
 	};
-	var pngToTemplate = function(file, data) {
-		var baseName =  path.basename(file, data.generalObj.ext);
+	var pngToTemplate = function(file, options, data) {
+		var baseName =  path.basename(file, data.ext);
 		var obj = {
-			className: data.generalObj.prefix + baseName,
-			mixinName: data.generalObj.mixinName,
-			dir: data.generalObj.dir,
-			lastDir: data.generalObj.lastDir,
+			className: options.prefix + baseName,
+			mixinName: options.fallback.mixinName,
+			dir: data.dir,
+			lastDir: options.fallback.lastDir,
 			fileName: baseName
 		};
+		data.items.push({
+			className: options.prefix + baseName,
+			fileName: baseName
+		});
 		data.resultItemVars += grunt.template.process(data.template.itemVarsTemplate, {data: obj});
 		data.resultAllItems += grunt.template.process(data.template.itemTemplate, {data: obj}) + "\n";
 	};
@@ -101,9 +105,9 @@ module.exports = function(grunt) {
 			resultGeneral : "",
 			resultItem : "",
 			resultAllItems : "",
+			template: options.templateFile.svg,
 			items: [],
-			allClasses: "",
-			template: options.templateFile.svg
+			allClasses: ""
 		};
 		var filesSvg = grunt.file.expandMapping(['*.svg'], options.files.cwdPng, {
 			cwd: options.files.cwdSvg,
@@ -133,9 +137,9 @@ module.exports = function(grunt) {
 					grunt.file.write(options.svg.destFile, rendered);
 				}
 				else {
-				svgData.resultImports = grunt.template.process(svgData.template.importsTemplate, {data: {allClasses: svgData.allClasses}});
-				svgData.resultAllItems = grunt.template.process(svgData.template.allItemsTemplate, {data: {allClasses: svgData.allClasses}});
-				grunt.file.write(options.svg.destFile, svgData.resultImports +  svgData.resultItemVars + "\n" + svgData.resultItem + svgData.resultAllItems + "\n\n");
+					svgData.resultImports = grunt.template.process(svgData.template.importsTemplate, {data: {allClasses: svgData.allClasses}});
+					svgData.resultAllItems = grunt.template.process(svgData.template.allItemsTemplate, {data: {allClasses: svgData.allClasses}});
+					grunt.file.write(options.svg.destFile, svgData.resultImports +  svgData.resultItemVars + "\n" + svgData.resultItem + svgData.resultAllItems + "\n\n");
 				}
 			}
 			if(options.fallback) {
@@ -155,29 +159,34 @@ module.exports = function(grunt) {
 			resultGeneral : "",
 			resultItem : "",
 			resultAllItems : "",
-			allClasses: "",
 			template: options.templateFile.fallback,
-			generalObj : {
-				prefix: options.prefix,
-				dir: options.fallback.dir,
-				lastDir: path.basename(options.fallback.dir),
-				ext: '.png',
-				mixinName: options.fallback.mixinName
-			}
+			allClasses: "",
+			items: [],
+			dir: options.fallback.dir,
+			lastDir: path.basename(options.fallback.dir),
+			ext: '.png',
+			mixinName: options.fallback.mixinName
 		};
-
 		var filesFallback = grunt.file.expand({
 			cwd: options.files.cwdPng
-		}, ['*'+ fallbackData.generalObj.ext]);
+		}, ['*'+ fallbackData.ext]);
 
 		filesFallback.forEach(function(file, i) {
-			pngToTemplate(file, fallbackData);
+			pngToTemplate(file, options, fallbackData);
 		});
+
 		if(filesFallback.length !== 0) {
-			fallbackData.resultImports = grunt.template.process(fallbackData.template.importsTemplate, {data: fallbackData.generalObj});
-			fallbackData.resultGeneral = grunt.template.process(fallbackData.template.generalTemplate, {data: fallbackData.generalObj});
 			grunt.log.writeln("Writing png fallback template.");
-			grunt.file.write(options.fallback.destFile, fallbackData.resultImports + fallbackData.resultItemVars + "\n" + fallbackData.resultGeneral + "\n\n" + fallbackData.resultAllItems);
+			options.templateFileFallback = checkTemplateFile(options.templateFileFallback);
+			if(options.templateFileFallback) {
+				var rendered = Mustache.render(options.templateFileFallback, fallbackData);
+				grunt.file.write(options.fallback.destFile, rendered);
+			}
+			else {
+				fallbackData.resultImports = grunt.template.process(fallbackData.template.importsTemplate, {data: fallbackData});
+				fallbackData.resultGeneral = grunt.template.process(fallbackData.template.generalTemplate, {data: fallbackData});
+				grunt.file.write(options.fallback.destFile, fallbackData.resultImports + fallbackData.resultItemVars + "\n" + fallbackData.resultGeneral + "\n\n" + fallbackData.resultAllItems);
+			}
 		}
 		options.done();
 	};
@@ -188,7 +197,7 @@ module.exports = function(grunt) {
 		var options = this.options({
 			templateFile: './test/template.json',
 			templateFileSvg: './test/templateSvg.mst',
-			templateFilePng: './test/templatePng.mst',
+			templateFileFallback: './test/templateFallback.mst',
 			files: {
 				cwdSvg: 'svg/',
 				cwdPng: "png/"
@@ -199,8 +208,6 @@ module.exports = function(grunt) {
 			png: false
 
 		});
-
-//		options.templateFilePng = checkTemplateFile(options.templateFilePng);
 
 		if(grunt.file.isFile(options.templateFile)) {
 			options.templateFile = grunt.file.readJSON(options.templateFile);
