@@ -17,8 +17,8 @@ ${{className}}-height: {{height}};
     height: ${{className}}-height;
     {{/height}}
 }
-{{/items}}
 
+{{/items}}
 {{allClasses}} {
 	background-repeat: no-repeat;
 }
