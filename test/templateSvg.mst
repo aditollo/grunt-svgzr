@@ -1,0 +1,17 @@
+{{#items}}
+${{className}}-width: {{width}};
+${{className}}-height: {{height}};
+{{/items}}
+
+{{#items}}
+.{{className}} {
+	background-image: url('data:image/svg+xml;base64,{{base64}}');
+	width: ${{className}}-width;
+	height: ${{className}}-height;
+}
+{{/items}}
+
+{{allClasses}} {
+	background-repeat: no-repeat;
+}
+

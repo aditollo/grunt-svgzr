@@ -22,9 +22,21 @@ module.exports = function(grunt) {
 	var path = require('path');
 	var eachAsync = require('each-async');
 	var parseString = require('xml2js').parseString;
+	var Mustache = require( path.join( '..', 'lib', 'mustache' ) );
 
 	var putPx = function(dimension) {
 		return dimension.indexOf('px') > -1 ? dimension : dimension + "px";
+	};
+
+	var checkTemplateFile = function(fileName) {
+		if(grunt.file.isFile(fileName)) {
+			return grunt.file.read(fileName);
+		}
+		else {
+//			grunt.fail.fatal("Missing template file: \"" + fileName + "\"");
+			grunt.log.subhead("Missing template file: \"" + fileName + "\". I'll proceed with the old json method");
+			return null;
+		}
 	};
 
 	var svgToPng = function(file, callback) {
@@ -65,6 +77,7 @@ module.exports = function(grunt) {
 			obj.size = grunt.template.process(data.template.sizeTemplate, {data: obj});
 		}
 		data.allClasses += "." + obj.className;
+		data.items.push(obj);
 		data.resultItem += grunt.template.process(data.template.itemTemplate, {data: obj});
 		grunt.log.writeln('template in base64 created from \"'+file.src[0]+'\"');
 	};
@@ -88,6 +101,7 @@ module.exports = function(grunt) {
 			resultGeneral : "",
 			resultItem : "",
 			resultAllItems : "",
+			items: [],
 			allClasses: "",
 			template: options.templateFile.svg
 		};
@@ -112,10 +126,17 @@ module.exports = function(grunt) {
 			}
 		}, function(err){
 			if(options.svg && filesSvg.length !== 0) {
+				grunt.log.writeln("Writing svg template.");
+				options.templateFileSvg = checkTemplateFile(options.templateFileSvg);
+				if(options.templateFileSvg) {
+					var rendered = Mustache.render(options.templateFileSvg, svgData);
+					grunt.file.write(options.svg.destFile, rendered);
+				}
+				else {
 				svgData.resultImports = grunt.template.process(svgData.template.importsTemplate, {data: {allClasses: svgData.allClasses}});
 				svgData.resultAllItems = grunt.template.process(svgData.template.allItemsTemplate, {data: {allClasses: svgData.allClasses}});
-				grunt.log.writeln("Writing svg template.");
 				grunt.file.write(options.svg.destFile, svgData.resultImports +  svgData.resultItemVars + "\n" + svgData.resultItem + svgData.resultAllItems + "\n\n");
+				}
 			}
 			if(options.fallback) {
 				createFallback(options);
@@ -165,7 +186,9 @@ module.exports = function(grunt) {
 		// Merge task-specific and/or target-specific options with these defaults.
 
 		var options = this.options({
-			templateFile: 'template.json',
+			templateFile: './test/template.json',
+			templateFileSvg: './test/templateSvg.mst',
+			templateFilePng: './test/templatePng.mst',
 			files: {
 				cwdSvg: 'svg/',
 				cwdPng: "png/"
@@ -176,6 +199,8 @@ module.exports = function(grunt) {
 			png: false
 
 		});
+
+//		options.templateFilePng = checkTemplateFile(options.templateFilePng);
 
 		if(grunt.file.isFile(options.templateFile)) {
 			options.templateFile = grunt.file.readJSON(options.templateFile);
