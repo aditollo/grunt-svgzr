@@ -28,8 +28,9 @@ grunt.initConfig({
 	svgzr: {
 		dist: {
 			options: {
-				templateFile: 'template.json',
-				files: {
+				templateFileSvg: 'templateSvg.mst',
+				templateFileFallback: 'templateFallback.mst',
+                files: {
 					cwdSvg: 'icons/svg/',
 					cwdPng: "sprite/fallback/"
 				},
@@ -51,11 +52,26 @@ grunt.initConfig({
 
 ### Options
 
-#### options.templateFile
+#### options.templateFileSvg
 Type: `String`
-Default value: Use a standard internal template.
+Default value: `'./test/templateSvg.mst'`
 
-The path of the template file used to create the svg and png scss files.
+The path of the template file used to create the svg scss file. If the path is invalid, the task will use the old json method.
+It is written with the [mustache](http://github.com/janl/mustache.js) template syntax.
+
+#### options.templateFileFallback
+Type: `String`
+Default value: `'./test/templateFallback.mst'`
+
+The path of the template file used to create the png scss file. If the path is invalid, the task will use the old json method.
+It is written with the [mustache](http://github.com/janl/mustache.js) template syntax.
+
+#### options.templateFile (DEPRECATED)
+Type: `String`
+Default value: `'./test/template.json'`
+
+The path of the template file used to create the svg and png scss files. If the path is invalid, The task will use a standard internal template.
+This option is deprecated. It'll be deleted in next issues.
 
 #### options.files.cwdSvg
 Type: `String`
@@ -153,7 +169,7 @@ grunt.initConfig({
 	svgzr: {
 		dist: {
 			options: {
-				templateFile: 'template.json',
+				templateFileSvg: 'templateSvg.mst',
 				files: {
 					cwdSvg: 'icons/svg/',
 				},
@@ -177,7 +193,7 @@ grunt.initConfig({
 	svgzr: {
 		dist: {
 			options: {
-				templateFile: 'template.json',
+			    templateFileFallback: 'templateFallback.mst',
 				files: {
 					cwdPng: "sprite/fallback/"
 				},
@@ -213,6 +229,8 @@ grunt.initConfig({
 ```
 
 ## Release History
+
+0.2.0 Adopted the mustache template method. The old json method is now deprecated. It'll be deleted in next issues.
 
 0.1.5 Removed im and gm; minor fixes.
 
