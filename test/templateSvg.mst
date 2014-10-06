@@ -1,0 +1,25 @@
+{{#items}}
+{{#width}}
+${{className}}-width: {{width}};
+{{/width}}
+{{#height}}
+${{className}}-height: {{height}};
+{{/height}}
+{{/items}}
+
+{{#items}}
+.{{className}} {
+	background-image: url('data:image/svg+xml;base64,{{base64}}');
+	{{#width}}
+    width: ${{className}}-width;
+	{{/width}}
+    {{#height}}
+    height: ${{className}}-height;
+    {{/height}}
+}
+
+{{/items}}
+{{allClasses}} {
+	background-repeat: no-repeat;
+}
+

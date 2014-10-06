@@ -102,5 +102,5 @@ exports.svgzr = {
 		});
 
 		test.done();
-	},
+	}
 };
