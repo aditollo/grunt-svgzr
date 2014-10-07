@@ -42,7 +42,6 @@
 					png: true,
 					fallback : {
 						mixinName: 'svg-fallback',
-						dir: 'fallback/',
 						destFile: 'test/result/_svg-fallback.scss'
 					}
 				}

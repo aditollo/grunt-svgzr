@@ -123,9 +123,10 @@ The name of the mixin that you want to use in the scss file with png classes
 
 #### options.fallback.dir
 Type: `String`
-Default value: `'fallback/'`
+Default value: `undefined`
 
-The path of png files relative to the scss file with png classes. It will be used from compass to create the png sprite file.
+It will be used from compass to create the png sprite file.
+If it is `undefined` or `null`, it'll be set to the relative path from `options.fallback.destFile` to `options.files.cwdPng`.
 
 #### options.fallback.destFile
 Type: `String`
