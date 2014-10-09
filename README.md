@@ -121,6 +121,13 @@ Default value: `'svg-fallback'`
 
 The name of the mixin that you want to use in the scss file with png classes
 
+#### options.fallback.dir
+Type: `String`
+Default value: `undefined`
+
+It will be used from compass to create the png sprite file. It has to consider the compass image_dir path in the config file.
+If it is `undefined` or `null`, it'll be set to the relative path from `options.fallback.destFile` to `options.files.cwdPng`.
+
 #### options.fallback.destFile
 Type: `String`
 Default value: `'example/sass/common/_icons-fallback.scss'`
@@ -223,6 +230,8 @@ grunt.initConfig({
 ```
 
 ## Release History
+
+0.2.2 Reverted last change. Both solution are now available.
 
 0.2.1 Dismissed the options.fallback.dir. Svgzr will automatically get the right dir.
 
