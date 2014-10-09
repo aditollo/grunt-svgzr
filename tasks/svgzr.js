@@ -212,7 +212,9 @@ module.exports = function(grunt) {
 			if(!options.fallback.mixinName) {
 				options.fallback.mixinName = 'svg-fallback';
 			}
-			options.fallback.dir = path.relative(path.dirname(options.fallback.destFile), options.files.cwdPng).split(path.sep).join('/') + '/';
+			if(!options.fallback.dir){
+				options.fallback.dir = path.relative(path.dirname(options.fallback.destFile), options.files.cwdPng).split(path.sep).join('/') + '/';
+			}
 		}
 		if(grunt.file.isFile(options.templateFile)) {
 			options.templateFile = grunt.file.readJSON(options.templateFile);
