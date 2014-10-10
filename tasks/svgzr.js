@@ -196,8 +196,6 @@ module.exports = function(grunt) {
 
 		var options = this.options({
 			templateFile: './test/template.json',
-			templateFileSvg: './test/templateSvg.mst',
-			templateFileFallback: './test/templateFallback.mst',
 			files: {
 				cwdSvg: 'svg/',
 				cwdPng: "png/"
@@ -208,6 +206,12 @@ module.exports = function(grunt) {
 			png: false
 
 		});
+		if(!options.templateFileSvg) {
+			options.templateFileSvg = path.join(__dirname, '..', 'test', 'templateSvg.mst')
+		}
+		if(!options.templateFileFallback) {
+			options.templateFileFallback = path.join(__dirname, '..', 'test', 'templateFallback.mst')
+		}
 		if(options.fallback){
 			if(!options.fallback.mixinName) {
 				options.fallback.mixinName = 'svg-fallback';
