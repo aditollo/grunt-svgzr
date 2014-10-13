@@ -54,24 +54,19 @@ grunt.initConfig({
 
 #### options.templateFileSvg
 Type: `String`
-Default value: `'./test/templateSvg.mst'`
+Default value: `undefined`
 
-The path of the template file used to create the svg scss file. If the path is invalid, the task will use the old json method.
+The path of the template file used to create the svg scss file.
 It is written with the [mustache](http://github.com/janl/mustache.js) template syntax.
+If it is null or undefined, the task will use the default template file, placed in `'./test/templateSvg.mst'`
 
 #### options.templateFileFallback
 Type: `String`
-Default value: `'./test/templateFallback.mst'`
+Default value: `undefined`
 
-The path of the template file used to create the png scss file. If the path is invalid, the task will use the old json method.
+The path of the template file used to create the png scss file.
 It is written with the [mustache](http://github.com/janl/mustache.js) template syntax.
-
-#### options.templateFile (DEPRECATED)
-Type: `String`
-Default value: `'./test/template.json'`
-
-The path of the template file used to create the svg and png scss files. If the path is invalid, The task will use a standard internal template.
-This option is deprecated. It'll be deleted in next issues.
+If it is null or undefined, the task will use the default template file, placed in `'./test/templateFallback.mst'`
 
 #### options.files.cwdSvg
 Type: `String`
@@ -230,6 +225,8 @@ grunt.initConfig({
 ```
 
 ## Release History
+
+0.2.3 Dismissed options.templateFile
 
 0.2.2 Reverted last change. Both solution are now available.
 

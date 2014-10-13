@@ -33,8 +33,8 @@ module.exports = function(grunt) {
 			return grunt.file.read(fileName);
 		}
 		else {
-//			grunt.fail.fatal("Missing template file: \"" + fileName + "\"");
-			grunt.log.subhead("Missing template file: \"" + fileName + "\". I'll proceed with the old json method");
+			grunt.fail.fatal("Missing template file: \"" + fileName + "\"");
+//			grunt.log.subhead("Missing template file: \"" + fileName + "\". I'll proceed with the old json method");
 			return null;
 		}
 	};
@@ -73,12 +73,9 @@ module.exports = function(grunt) {
 			obj.width = putPx(obj.width);
 			obj.height = putPx(obj.height);
 
-			data.resultItemVars += grunt.template.process(data.template.itemVarsTemplate, {data: obj});
-			obj.size = grunt.template.process(data.template.sizeTemplate, {data: obj});
 		}
 		data.allClasses += "." + obj.className;
 		data.items.push(obj);
-		data.resultItem += grunt.template.process(data.template.itemTemplate, {data: obj});
 		grunt.log.writeln('template in base64 created from \"'+file.src[0]+'\"');
 	};
 	var pngToTemplate = function(file, options, data) {
@@ -94,18 +91,10 @@ module.exports = function(grunt) {
 			className: options.prefix + baseName,
 			fileName: baseName
 		});
-		data.resultItemVars += grunt.template.process(data.template.itemVarsTemplate, {data: obj});
-		data.resultAllItems += grunt.template.process(data.template.itemTemplate, {data: obj}) + "\n";
 	};
 	var firstCycle = function(options) {
 		var converter = null;
 		var svgData = {
-			resultImports : "",
-			resultItemVars : "",
-			resultGeneral : "",
-			resultItem : "",
-			resultAllItems : "",
-			template: options.templateFile.svg,
 			items: [],
 			allClasses: ""
 		};
@@ -132,15 +121,8 @@ module.exports = function(grunt) {
 			if(options.svg && filesSvg.length !== 0) {
 				grunt.log.writeln("Writing svg template.");
 				options.templateFileSvg = checkTemplateFile(options.templateFileSvg);
-				if(options.templateFileSvg) {
-					var rendered = Mustache.render(options.templateFileSvg, svgData);
-					grunt.file.write(options.svg.destFile, rendered);
-				}
-				else {
-					svgData.resultImports = grunt.template.process(svgData.template.importsTemplate, {data: {allClasses: svgData.allClasses}});
-					svgData.resultAllItems = grunt.template.process(svgData.template.allItemsTemplate, {data: {allClasses: svgData.allClasses}});
-					grunt.file.write(options.svg.destFile, svgData.resultImports +  svgData.resultItemVars + "\n" + svgData.resultItem + svgData.resultAllItems + "\n\n");
-				}
+				var rendered = Mustache.render(options.templateFileSvg, svgData);
+				grunt.file.write(options.svg.destFile, rendered);
 			}
 			if(options.fallback) {
 				createFallback(options);
@@ -154,12 +136,6 @@ module.exports = function(grunt) {
 	};
 	var createFallback = function(options) {
 		var fallbackData = {
-			resultImports : "",
-			resultItemVars : "",
-			resultGeneral : "",
-			resultItem : "",
-			resultAllItems : "",
-			template: options.templateFile.fallback,
 			allClasses: "",
 			items: [],
 			dir: options.fallback.dir,
@@ -178,15 +154,8 @@ module.exports = function(grunt) {
 		if(filesFallback.length !== 0) {
 			grunt.log.writeln("Writing png fallback template.");
 			options.templateFileFallback = checkTemplateFile(options.templateFileFallback);
-			if(options.templateFileFallback) {
-				var rendered = Mustache.render(options.templateFileFallback, fallbackData);
-				grunt.file.write(options.fallback.destFile, rendered);
-			}
-			else {
-				fallbackData.resultImports = grunt.template.process(fallbackData.template.importsTemplate, {data: fallbackData});
-				fallbackData.resultGeneral = grunt.template.process(fallbackData.template.generalTemplate, {data: fallbackData});
-				grunt.file.write(options.fallback.destFile, fallbackData.resultImports + fallbackData.resultItemVars + "\n" + fallbackData.resultGeneral + "\n\n" + fallbackData.resultAllItems);
-			}
+			var rendered = Mustache.render(options.templateFileFallback, fallbackData);
+			grunt.file.write(options.fallback.destFile, rendered);
 		}
 		options.done();
 	};
@@ -195,7 +164,6 @@ module.exports = function(grunt) {
 		// Merge task-specific and/or target-specific options with these defaults.
 
 		var options = this.options({
-			templateFile: './test/template.json',
 			files: {
 				cwdSvg: 'svg/',
 				cwdPng: "png/"
@@ -207,10 +175,10 @@ module.exports = function(grunt) {
 
 		});
 		if(!options.templateFileSvg) {
-			options.templateFileSvg = path.join(__dirname, '..', 'test', 'templateSvg.mst')
+			options.templateFileSvg = path.join(__dirname, '..', 'test', 'templateSvg.mst');
 		}
 		if(!options.templateFileFallback) {
-			options.templateFileFallback = path.join(__dirname, '..', 'test', 'templateFallback.mst')
+			options.templateFileFallback = path.join(__dirname, '..', 'test', 'templateFallback.mst');
 		}
 		if(options.fallback){
 			if(!options.fallback.mixinName) {
@@ -219,30 +187,6 @@ module.exports = function(grunt) {
 			if(!options.fallback.dir){
 				options.fallback.dir = path.relative(path.dirname(options.fallback.destFile), options.files.cwdPng).split(path.sep).join('/') + '/';
 			}
-		}
-		if(grunt.file.isFile(options.templateFile)) {
-			options.templateFile = grunt.file.readJSON(options.templateFile);
-		}
-		else {
-			options.templateFile = {
-				"svg" : {
-					"importsTemplate": "",
-					"generalVarsTemplate": "",
-					"itemVarsTemplate": "$<%= className %>-width: <%= width %>;\n$<%= className %>-height: <%= height %>;\n",
-					"generalTemplate": "",
-					"itemTemplate": ".<%= className %> {\n\tbackground-image: url('data:image/svg+xml;base64,<%= base64 %>');\n<%= size %>}\n\n",
-					"allItemsTemplate": "<%= allClasses %> {\n\tbackground-repeat: no-repeat;\n}",
-					"sizeTemplate": "\twidth: $<%= className %>-width;\n\theight: $<%= className %>-height;\n"
-				},
-				"fallback" : {
-					"importsTemplate": "@import 'compass/utilities/sprites';\n@import '<%= dir %>*<%= ext %>';\n\n",
-					"generalVarsTemplate": "",
-					"itemVarsTemplate": "",
-					"generalTemplate": "// Helper for svg fallbacks (ie8 and lower/unsupported browsers)\n@mixin <%= mixinName %>($fileName){\n\t.no-svg &, .ielt9 & {\n\t\t@include <%= lastDir %>-sprite($fileName);\n\t\twidth: <%= lastDir %>-sprite-width($fileName);\n\t\theight: <%= lastDir %>-sprite-height($fileName);\n\t}\n}\n",
-					"itemTemplate": ".<%= className %> {\n\t@include <%= mixinName %>(<%= fileName %>);\n}\n",
-					"allItemsTemplate": ""
-				}
-			};
 		}
 		options.done = this.async();
 
