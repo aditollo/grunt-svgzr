@@ -28,6 +28,15 @@ module.exports = function(grunt) {
 		return dimension.indexOf('px') > -1 ? dimension : dimension + "px";
 	};
 
+	var cleanFolder = function(folderName) {
+		var files = grunt.file.expand({
+			cwd: folderName
+		}, ['*.png']);
+		files.forEach(function(file, i) {
+			grunt.file.delete(path.join(folderName, file));
+		});
+	};
+
 	var checkTemplateFile = function(fileName) {
 		if(grunt.file.isFile(fileName)) {
 			return grunt.file.read(fileName);
@@ -103,6 +112,9 @@ module.exports = function(grunt) {
 			ext: '.png',
 			extDot: 'first'
 		});
+		if(options.png && grunt.file.isDir(options.files.cwdSvg)) {
+			cleanFolder(options.files.cwdPng);
+		}
 		eachAsync(filesSvg,function(file, i, next){
 			// svg template
 			if(options.svg) {
