@@ -226,6 +226,8 @@ grunt.initConfig({
 
 ## Release History
 
+0.2.4 Added and fixed cleaning of cwdPng folder.
+
 0.2.3 Dismissed options.templateFile
 
 0.2.2 Reverted last change. Both solution are now available.

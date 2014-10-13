@@ -33,7 +33,7 @@ module.exports = function(grunt) {
 			cwd: folderName
 		}, ['*.png']);
 		files.forEach(function(file, i) {
-			grunt.file.delete(path.join(folderName, file));
+			grunt.file.delete(path.join(folderName, file), {force:true});
 		});
 	};
 
