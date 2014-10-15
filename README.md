@@ -28,8 +28,6 @@ grunt.initConfig({
 	svgzr: {
 		dist: {
 			options: {
-				templateFileSvg: 'templateSvg.mst',
-				templateFileFallback: 'templateFallback.mst',
                 files: {
 					cwdSvg: 'icons/svg/',
 					cwdPng: "sprite/fallback/"
@@ -165,7 +163,6 @@ grunt.initConfig({
 	svgzr: {
 		dist: {
 			options: {
-				templateFileSvg: 'templateSvg.mst',
 				files: {
 					cwdSvg: 'icons/svg/',
 				},
@@ -189,7 +186,6 @@ grunt.initConfig({
 	svgzr: {
 		dist: {
 			options: {
-			    templateFileFallback: 'templateFallback.mst',
 				files: {
 					cwdPng: "sprite/fallback/"
 				},
