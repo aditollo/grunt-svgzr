@@ -74,6 +74,14 @@ module.exports = function(grunt) {
 			base64: new Buffer(srcSvg).toString('base64'),
 			size: ""
 		};
+		if(options.encodeType === 'uri') {
+			obj.encoded = encodeURIComponent(srcSvg);
+
+		}
+		else {
+			obj.encoded = obj.base64;
+		}
+		obj.isBase64 = (options.encodeType === 'base64');
 		parseString(srcSvg, function (err, result) {
 			obj.width = result.svg.$.width;
 			obj.height = result.svg.$.height;
@@ -85,7 +93,7 @@ module.exports = function(grunt) {
 		}
 		data.allClasses += "." + obj.className;
 		data.items.push(obj);
-		grunt.log.writeln('template in base64 created from \"'+file.src[0]+'\"');
+		grunt.log.writeln('encoded data created from \"'+file.src[0]+'\"');
 	};
 	var pngToTemplate = function(file, options, data) {
 		var baseName =  path.basename(file, data.ext);
@@ -172,7 +180,7 @@ module.exports = function(grunt) {
 		options.done();
 	};
 
-	grunt.registerMultiTask('svgzr', 'Convert svg to png, and create templates for sass and compass with base64 svg and png.', function() {
+	grunt.registerMultiTask('svgzr', 'Convert svg to png, and create templates for sass and compass with encoded svg and png.', function() {
 		// Merge task-specific and/or target-specific options with these defaults.
 
 		var options = this.options({
@@ -181,6 +189,7 @@ module.exports = function(grunt) {
 				cwdPng: "png/"
 			},
 			prefix: 'svg-',
+			encodeType: 'uri',
 			svg: false,
 			fallback : false,
 			png: false
@@ -191,6 +200,9 @@ module.exports = function(grunt) {
 		}
 		if(!options.templateFileFallback) {
 			options.templateFileFallback = path.join(__dirname, '..', 'test', 'templateFallback.mst');
+		}
+		if(options.encodeType !== 'uri' && options.encodeType !== 'base64') {
+			options.encodeType = 'uri';
 		}
 		if(options.fallback){
 			if(!options.fallback.mixinName) {

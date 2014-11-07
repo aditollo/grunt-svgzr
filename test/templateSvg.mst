@@ -9,7 +9,7 @@ ${{className}}-height: {{height}};
 
 {{#items}}
 .{{className}} {
-	background-image: url('data:image/svg+xml;base64,{{base64}}');
+	background-image: url('data:image/svg+xml;charset=utf-8{{#isBase64}};base64{{/isBase64}},{{encoded}}');
 	{{#width}}
     width: ${{className}}-width;
 	{{/width}}
