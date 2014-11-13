@@ -23,6 +23,9 @@ module.exports = function(grunt) {
 	var eachAsync = require('each-async');
 	var parseString = require('xml2js').parseString;
 	var Mustache = require( path.join( '..', 'lib', 'mustache' ) );
+	var SvgoLib = require('svgo');
+	var svgo;
+	var Q = require('q');
 
 	var putPx = function(dimension) {
 		return dimension.indexOf('px') > -1 ? dimension : dimension + "px";
@@ -63,37 +66,68 @@ module.exports = function(grunt) {
 
 	};
 
+	var svgMin = function(source) {
+		//crei un oggetto promise
+		return  Q.Promise(function(resolve, reject, notify) {
+			svgo.optimize(source, function (result) {
+				if (result.error) {
+					grunt.warn('Minify: error parsing SVG:', result.error);
+					reject();
+				}
+				resolve(result.data) ;
+			});
+		}) ;
+
+
+		//restituisci l'ggetto
+	};
+
 	var svgToTemplate = function(file, options, data) {
 		var srcSvg = grunt.file.read(file.src[0]);
 		var baseName =  path.basename(file.src[0]);
 		while (path.extname(baseName)!== ''){
 			baseName = path.basename(baseName, path.extname(baseName));
 		}
-		var obj = {
-			className: options.prefix + baseName,
-			base64: new Buffer(srcSvg).toString('base64'),
-			size: ""
-		};
-		if(options.encodeType === 'uri') {
-			obj.encoded = encodeURIComponent(srcSvg);
 
-		}
-		else {
-			obj.encoded = obj.base64;
-		}
-		obj.isBase64 = (options.encodeType === 'base64');
-		parseString(srcSvg, function (err, result) {
-			obj.width = result.svg.$.width;
-			obj.height = result.svg.$.height;
-		});
-		if(obj.width && obj.height) {
-			obj.width = putPx(obj.width);
-			obj.height = putPx(obj.height);
 
-		}
-		data.allClasses += "." + obj.className;
-		data.items.push(obj);
-		grunt.log.writeln('encoded data created from \"'+file.src[0]+'\"');
+		svgMin(srcSvg)
+			.then(function(result) {
+
+				grunt.log.writeln(baseName + ' minified. Saved ' + Math.round((srcSvg.length - result.length)/ srcSvg.length * 100) + '%.');
+				return result;
+			}).fail(function() {
+				return srcSvg;
+			}).done(function(svgData) {
+				var obj = {
+					className: options.prefix + baseName,
+					base64: new Buffer(svgData).toString('base64'),
+					size: ""
+				};
+				if(options.encodeType === 'uri') {
+					obj.encoded = encodeURIComponent(svgData);
+
+				}
+				else {
+					obj.encoded = obj.base64;
+				}
+				obj.isBase64 = (options.encodeType === 'base64');
+				parseString(svgData, function (err, result) {
+					obj.width = result.svg.$.width;
+					obj.height = result.svg.$.height;
+				});
+				if(obj.width && obj.height) {
+					obj.width = putPx(obj.width);
+					obj.height = putPx(obj.height);
+
+				}
+				data.allClasses += ", ." + obj.className;
+				if(data.allClasses.indexOf(", ") === 0) {
+					data.allClasses = data.allClasses.substring(2, data.allClasses.length);
+				}
+				data.items.push(obj);
+				grunt.log.writeln('encoded data created from \"'+file.src[0]+'\"');
+			});
+
 	};
 	var pngToTemplate = function(file, options, data) {
 		var baseName =  path.basename(file, data.ext);
@@ -127,7 +161,7 @@ module.exports = function(grunt) {
 			// svg template
 			if(options.svg) {
 				svgToTemplate(file, options, svgData);
-				svgData.allClasses += ((i===filesSvg.length-1) ? "" : ", ");
+//				svgData.allClasses += ((i===filesSvg.length-1) ? "" : ", ");
 			}
 
 			// svg to png
@@ -182,7 +216,12 @@ module.exports = function(grunt) {
 
 	grunt.registerMultiTask('svgzr', 'Convert svg to png, and create templates for sass and compass with encoded svg and png.', function() {
 		// Merge task-specific and/or target-specific options with these defaults.
-
+		svgo = new SvgoLib({
+			plugins: [
+				{removeViewBox: false},
+				{convertPathData: { straightCurves: false }}
+			]
+		});
 		var options = this.options({
 			files: {
 				cwdSvg: 'svg/',
