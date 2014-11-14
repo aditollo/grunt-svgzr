@@ -84,6 +84,12 @@ Default value: `'svg-'`
 
 A string used as prefix in css classes
 
+#### options.encodeType
+Type: `String`
+Default value: `'uri'`
+
+A string used as prefix in css classes
+
 #### options.svg
 Type: `object`
 Default value: `false`
@@ -221,6 +227,8 @@ grunt.initConfig({
 ```
 
 ## Release History
+
+0.3.0 Added svgo and minified svg; introduced promises system [q](http://gruntjs.com/); changed encoding system from base64 to uri. Some studies have shown that it is better, especially if the site use gzip compression. You can still choose base64 with options.encodeType. ATTENTION: the basic svgTemplate file was changed.
 
 0.2.5 Minor fixes.
 
