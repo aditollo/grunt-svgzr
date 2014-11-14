@@ -88,7 +88,8 @@ A string used as prefix in css classes
 Type: `String`
 Default value: `'uri'`
 
-A string used as prefix in css classes
+Define the encode type that will be used in svg encoding. If it is undefined or null, or unknown value, 'uri' value will be used.
+At the moment, you can use 'uri' for uri encode, and 'base64' for base64 encode.
 
 #### options.svg
 Type: `object`
