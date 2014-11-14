@@ -51,23 +51,22 @@ module.exports = function(grunt) {
 		}
 	};
 
-	var svgToPng = function(file, callback) {
-		var srcPath = file.src[0];
-
-		svg2png(srcPath, file.dest, function (err) {
-			if( err ){
-				grunt.fatal( err );
-			}
-			else {
-				grunt.log.writeln('image converted from \"' + srcPath + '\" to \"' + file.dest + '\".');
-			}
-			callback();
+	var svgToPng = function(file) {
+		return  Q.Promise(function(resolve, reject, notify) {
+			var srcPath = file.src[0];
+			svg2png(srcPath, file.dest, function (err) {
+				if( err ){
+					reject(err)
+				}
+				else {
+					grunt.log.writeln('image converted to \"' + file.dest + '\".');
+					resolve(file)
+				}
+			});
 		});
-
 	};
 
 	var svgMin = function(source) {
-		//crei un oggetto promise
 		return  Q.Promise(function(resolve, reject, notify) {
 			svgo.optimize(source, function (result) {
 				if (result.error) {
@@ -77,9 +76,6 @@ module.exports = function(grunt) {
 				resolve(result.data) ;
 			});
 		}) ;
-
-
-		//restituisci l'ggetto
 	};
 
 	var svgToTemplate = function(file, options, data) {
@@ -90,9 +86,8 @@ module.exports = function(grunt) {
 		}
 
 
-		svgMin(srcSvg)
+		return svgMin(srcSvg)
 			.then(function(result) {
-
 				grunt.log.writeln(baseName + ' minified. Saved ' + Math.round((srcSvg.length - result.length)/ srcSvg.length * 100) + '%.');
 				return result;
 			}).fail(function() {
@@ -105,7 +100,6 @@ module.exports = function(grunt) {
 				};
 				if(options.encodeType === 'uri') {
 					obj.encoded = encodeURIComponent(svgData);
-
 				}
 				else {
 					obj.encoded = obj.base64;
@@ -150,42 +144,49 @@ module.exports = function(grunt) {
 			allClasses: ""
 		};
 		var filesSvg = grunt.file.expandMapping(['*.svg'], options.files.cwdPng, {
-			cwd: options.files.cwdSvg,
-			ext: '.png',
-			extDot: 'first'
-		});
-		if(options.png && grunt.file.isDir(options.files.cwdSvg)) {
-			cleanFolder(options.files.cwdPng);
-		}
-		eachAsync(filesSvg,function(file, i, next){
-			// svg template
-			if(options.svg) {
-				svgToTemplate(file, options, svgData);
-//				svgData.allClasses += ((i===filesSvg.length-1) ? "" : ", ");
-			}
+				cwd: options.files.cwdSvg,
+				ext: '.png',
+				extDot: 'first'
+			});
 
-			// svg to png
-			if(options.png) {
-				svgToPng(file, next);
+		var result = Q.fcall(function() {
+			if(options.png && grunt.file.isDir(options.files.cwdSvg)) {
+				cleanFolder(options.files.cwdPng);
 			}
-			else {
-				next();
-			}
-		}, function(err){
-			if(options.svg && filesSvg.length !== 0) {
-				grunt.log.writeln("Writing svg template.");
-				options.templateFileSvg = checkTemplateFile(options.templateFileSvg);
-				var rendered = Mustache.render(options.templateFileSvg, svgData);
-				grunt.file.write(options.svg.destFile, rendered);
-			}
-			if(options.fallback) {
-				createFallback(options);
-			}
-			else {
-				options.done();
-			}
+		})
+
+		filesSvg.forEach(function(file) {
+
+			result = result.then(function() {
+				if(options.svg) {
+					svgToTemplate(file, options, svgData);
+				}
+			}).then(function() {
+
+				if(options.png) {
+					return svgToPng(file);
+				}
+
+			})
 
 		});
+
+		return result.fail(function(err) {
+					grunt.fatal( err );
+				}).done(function() {
+					if(options.svg && filesSvg.length !== 0) {
+						grunt.log.writeln("Writing svg template.");
+						options.templateFileSvg = checkTemplateFile(options.templateFileSvg);
+						var rendered = Mustache.render(options.templateFileSvg, svgData);
+						grunt.file.write(options.svg.destFile, rendered);
+					}
+					if(options.fallback) {
+						createFallback(options);
+					}
+					else {
+						options.done();
+					}
+				});
 
 	};
 	var createFallback = function(options) {
