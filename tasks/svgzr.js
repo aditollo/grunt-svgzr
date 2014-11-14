@@ -171,15 +171,16 @@ module.exports = function(grunt) {
 
 		});
 
-		return result.fail(function(err) {
-					grunt.fatal( err );
-				}).done(function() {
+		return result.then(function() {
 					if(options.svg && filesSvg.length !== 0) {
 						grunt.log.writeln("Writing svg template.");
 						options.templateFileSvg = checkTemplateFile(options.templateFileSvg);
 						var rendered = Mustache.render(options.templateFileSvg, svgData);
 						grunt.file.write(options.svg.destFile, rendered);
 					}
+				}).fail(function(err) {
+					grunt.fatal( err );
+				}).done(function() {
 					if(options.fallback) {
 						createFallback(options);
 					}
@@ -236,12 +237,17 @@ module.exports = function(grunt) {
 
 		});
 		if(!options.templateFileSvg) {
+			// non andrebbe qua la roba di test...
 			options.templateFileSvg = path.join(__dirname, '..', 'test', 'templateSvg.mst');
 		}
 		if(!options.templateFileFallback) {
+			// non andrebbe qua la roba di test...
 			options.templateFileFallback = path.join(__dirname, '..', 'test', 'templateFallback.mst');
 		}
+		// non sarebbe meglio dare qua il controllo se il template esiste, e se no uccidere il task?
+		// ora viene fatto per ogni file..
 		if(options.encodeType !== 'uri' && options.encodeType !== 'base64') {
+			// perchè ci sono due proprietà? non bastava un booleano?
 			options.encodeType = 'uri';
 		}
 		if(options.fallback){
