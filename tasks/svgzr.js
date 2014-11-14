@@ -56,11 +56,11 @@ module.exports = function(grunt) {
 			var srcPath = file.src[0];
 			svg2png(srcPath, file.dest, function (err) {
 				if( err ){
-					reject(err)
+					reject(err);
 				}
 				else {
 					grunt.log.writeln('image converted to \"' + file.dest + '\".');
-					resolve(file)
+					resolve(file);
 				}
 			});
 		});
@@ -153,7 +153,7 @@ module.exports = function(grunt) {
 			if(options.png && grunt.file.isDir(options.files.cwdSvg)) {
 				cleanFolder(options.files.cwdPng);
 			}
-		})
+		});
 
 		filesSvg.forEach(function(file) {
 
@@ -167,7 +167,7 @@ module.exports = function(grunt) {
 					return svgToPng(file);
 				}
 
-			})
+			});
 
 		});
 
@@ -237,17 +237,13 @@ module.exports = function(grunt) {
 
 		});
 		if(!options.templateFileSvg) {
-			// non andrebbe qua la roba di test...
 			options.templateFileSvg = path.join(__dirname, '..', 'test', 'templateSvg.mst');
 		}
 		if(!options.templateFileFallback) {
-			// non andrebbe qua la roba di test...
 			options.templateFileFallback = path.join(__dirname, '..', 'test', 'templateFallback.mst');
 		}
-		// non sarebbe meglio dare qua il controllo se il template esiste, e se no uccidere il task?
-		// ora viene fatto per ogni file..
+
 		if(options.encodeType !== 'uri' && options.encodeType !== 'base64') {
-			// perchè ci sono due proprietà? non bastava un booleano?
 			options.encodeType = 'uri';
 		}
 		if(options.fallback){
