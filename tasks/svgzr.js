@@ -143,13 +143,19 @@ module.exports = function(grunt) {
 			items: [],
 			allClasses: ""
 		};
-		var filesSvg = grunt.file.expandMapping(['*.svg'], options.files.cwdPng, {
-				cwd: options.files.cwdSvg,
-				ext: '.png',
-				extDot: 'first'
-			});
 
-		var result = Q.fcall(function() {
+		var result = Q.fcall(function() {  });
+
+		if(!options.svg && !options.png){
+			return result;
+		}
+		var filesSvg = grunt.file.expandMapping(['*.svg'], options.files.cwdPng, {
+			cwd: options.files.cwdSvg,
+			ext: '.png',
+			extDot: 'first'
+		});
+
+		result = result.then(function() {
 			if(options.png && grunt.file.isDir(options.files.cwdSvg)) {
 				cleanFolder(options.files.cwdPng);
 			}
@@ -172,22 +178,15 @@ module.exports = function(grunt) {
 		});
 
 		return result.then(function() {
-					if(options.svg && filesSvg.length !== 0) {
-						grunt.log.writeln("Writing svg template.");
-						options.templateFileSvg = checkTemplateFile(options.templateFileSvg);
-						var rendered = Mustache.render(options.templateFileSvg, svgData);
-						grunt.file.write(options.svg.destFile, rendered);
-					}
-				}).fail(function(err) {
-					grunt.fatal( err );
-				}).done(function() {
-					if(options.fallback) {
-						createFallback(options);
-					}
-					else {
-						options.done();
-					}
-				});
+			if(options.svg && filesSvg.length !== 0) {
+				grunt.log.writeln("Writing svg template.");
+				options.templateFileSvg = checkTemplateFile(options.templateFileSvg);
+				var rendered = Mustache.render(options.templateFileSvg, svgData);
+				grunt.file.write(options.svg.destFile, rendered);
+			}
+		}).fail(function(err) {
+			grunt.fatal( err );
+		});
 
 	};
 	var createFallback = function(options) {
@@ -213,7 +212,6 @@ module.exports = function(grunt) {
 			var rendered = Mustache.render(options.templateFileFallback, fallbackData);
 			grunt.file.write(options.fallback.destFile, rendered);
 		}
-		options.done();
 	};
 
 	grunt.registerMultiTask('svgzr', 'Convert svg to png, and create templates for sass and compass with encoded svg and png.', function() {
@@ -256,16 +254,14 @@ module.exports = function(grunt) {
 		}
 		options.done = this.async();
 
+		firstCycle(options)
+			.then(function() {
+				if(options.fallback) {
+					createFallback(options);
+				}
+			}).done(options.done);
 
-		if(options.svg || options.png){
-			firstCycle(options);
-		}
-		else if(options.fallback) {
-			createFallback(options);
-		}
-		else {
-			options.done();
-		}
+
 
 	});
 
