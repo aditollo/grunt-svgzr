@@ -68,13 +68,18 @@ module.exports = function(grunt) {
 
 	var svgMin = function(source) {
 		return  Q.Promise(function(resolve, reject, notify) {
-			svgo.optimize(source, function (result) {
-				if (result.error) {
-					grunt.warn('Minify: error parsing SVG:', result.error);
-					reject();
-				}
-				resolve(result.data) ;
-			});
+			if(svgo) {
+				svgo.optimize(source, function (result) {
+					if (result.error) {
+						grunt.warn('Minify: error parsing SVG:', result.error);
+						reject();
+					}
+					resolve(result.data) ;
+				});
+			}
+			else {
+				reject();
+			}
 		}) ;
 	};
 
@@ -216,12 +221,6 @@ module.exports = function(grunt) {
 
 	grunt.registerMultiTask('svgzr', 'Convert svg to png, and create templates for sass and compass with encoded svg and png.', function() {
 		// Merge task-specific and/or target-specific options with these defaults.
-		svgo = new SvgoLib({
-			plugins: [
-				{removeViewBox: false},
-				{convertPathData: { straightCurves: false }}
-			]
-		});
 		var options = this.options({
 			files: {
 				cwdSvg: 'svg/',
@@ -229,11 +228,30 @@ module.exports = function(grunt) {
 			},
 			prefix: 'svg-',
 			encodeType: 'uri',
+			svgo: true,
 			svg: false,
 			fallback : false,
 			png: false
 
 		});
+		var svgoOptions;
+		if(options.svgo === true ) {
+			svgoOptions = {
+				plugins: [
+					{removeViewBox: false},
+					{convertPathData: { straightCurves: false }}
+				]
+			};
+		}
+		else if(typeof(options.svgo)=== "object" && options.svgo !== null){
+			svgoOptions = options.svgo;
+		}
+		else {
+			options.svgo = false;
+		}
+		if(options.svgo !== false){
+			svgo = new SvgoLib(svgoOptions);
+		}
 		if(!options.templateFileSvg) {
 			options.templateFileSvg = path.join(__dirname, '..', 'test', 'templateSvg.mst');
 		}
