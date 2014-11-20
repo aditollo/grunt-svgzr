@@ -93,7 +93,7 @@ module.exports = function(grunt) {
 			});
 		});
 
-	}
+	};
 
 	var encode = function(svgData, options, baseName) {
 		return  Q.Promise(function(resolve, reject, notify) {
@@ -112,10 +112,10 @@ module.exports = function(grunt) {
 			obj.isBase64 = (options.encodeType === 'base64');
 			resolve(obj);
 		});
-	}
+	};
 
 
-	var svgToTemplate = function(file, options) {
+	var svgToTemplate = function(file, options, data) {
 		var srcSvg = grunt.file.read(file.src[0]);
 		var baseName =  path.basename(file.src[0]);
 		while (path.extname(baseName)!== ''){
@@ -123,7 +123,7 @@ module.exports = function(grunt) {
 		}
 
 
-		return svgMin(srcSvg, data)
+		return svgMin(srcSvg)
 			.then(function(result) {
 				grunt.log.writeln(baseName + ' minified. Saved ' + Math.round((srcSvg.length - result.length)/ srcSvg.length * 100) + '%.');
 				return result;
