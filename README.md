@@ -91,6 +91,21 @@ Default value: `'uri'`
 Define the encode type that will be used in svg encoding. If it is undefined or null, or unknown value, 'uri' value will be used.
 At the moment, you can use 'uri' for uri encode, and 'base64' for base64 encode.
 
+#### options.svgo
+Type: `object`
+Default value: `true`
+
+If `true`, svgs will be minified with default svgo options .
+```js
+{
+	plugins: [
+		{removeViewBox: false},
+		{convertPathData: { straightCurves: false }}
+	]
+}
+```
+if `false`,`null` or `undefined`, svgs will not be minified. If is an object, it'll be used as svgo option, in accordance with [svgo plugins list](https://github.com/svg/svgo#what-it-can-do).
+
 #### options.svg
 Type: `object`
 Default value: `false`
@@ -228,6 +243,8 @@ grunt.initConfig({
 ```
 
 ## Release History
+
+0.3.1 Added option options.svgo to enable or disable svgo and minified svg.
 
 0.3.0 Added svgo and minified svg; introduced promises system [q](http://gruntjs.com/); changed encoding system from base64 to uri. Some studies have shown that it is better, especially if the site use gzip compression. You can still choose base64 with options.encodeType. ATTENTION: the basic svgTemplate file is changed.
 

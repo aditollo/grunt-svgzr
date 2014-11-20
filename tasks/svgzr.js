@@ -20,7 +20,6 @@ module.exports = function(grunt) {
 
 	var svg2png = require('svg2png');
 	var path = require('path');
-	var eachAsync = require('each-async');
 	var parseString = require('xml2js').parseString;
 	var Mustache = require( path.join( '..', 'lib', 'mustache' ) );
 	var SvgoLib = require('svgo');
