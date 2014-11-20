@@ -27,7 +27,9 @@ module.exports = function(grunt) {
 	var Q = require('q');
 
 	var putPx = function(dimension) {
-		return dimension.indexOf('px') > -1 ? dimension : dimension + "px";
+		if (typeof dimension !== 'undefined') {
+			return dimension.indexOf('px') > -1 ? dimension : dimension + "px";
+		}
 	};
 
 	var cleanFolder = function(folderName) {
@@ -82,7 +84,38 @@ module.exports = function(grunt) {
 		}) ;
 	};
 
-	var svgToTemplate = function(file, options, data) {
+	var getDimensions = function(obj) {
+		return  Q.Promise(function(resolve, reject, notify) {
+			parseString(obj.originalSvg, function (err, result) {
+				obj.width = putPx(result.svg.$.width);
+				obj.height = putPx(result.svg.$.height);
+				resolve(obj);
+			});
+		});
+
+	}
+
+	var encode = function(svgData, options, baseName) {
+		return  Q.Promise(function(resolve, reject, notify) {
+			var obj = {
+				className: options.prefix + baseName,
+				size: "",
+				originalSvg: svgData
+			};
+			if(options.encodeType === 'uri') {
+				obj.encoded = encodeURIComponent(svgData);
+			}
+			else {
+				obj.encoded = new Buffer(svgData).toString('base64');
+			}
+			obj.base64 = obj.encoded;
+			obj.isBase64 = (options.encodeType === 'base64');
+			resolve(obj);
+		});
+	}
+
+
+	var svgToTemplate = function(file, options) {
 		var srcSvg = grunt.file.read(file.src[0]);
 		var baseName =  path.basename(file.src[0]);
 		while (path.extname(baseName)!== ''){
@@ -90,34 +123,19 @@ module.exports = function(grunt) {
 		}
 
 
-		return svgMin(srcSvg)
+		return svgMin(srcSvg, data)
 			.then(function(result) {
 				grunt.log.writeln(baseName + ' minified. Saved ' + Math.round((srcSvg.length - result.length)/ srcSvg.length * 100) + '%.');
 				return result;
 			}).fail(function() {
 				return srcSvg;
-			}).done(function(svgData) {
-				var obj = {
-					className: options.prefix + baseName,
-					base64: new Buffer(svgData).toString('base64'),
-					size: ""
-				};
-				if(options.encodeType === 'uri') {
-					obj.encoded = encodeURIComponent(svgData);
-				}
-				else {
-					obj.encoded = obj.base64;
-				}
-				obj.isBase64 = (options.encodeType === 'base64');
-				parseString(svgData, function (err, result) {
-					obj.width = result.svg.$.width;
-					obj.height = result.svg.$.height;
-				});
-				if(obj.width && obj.height) {
-					obj.width = putPx(obj.width);
-					obj.height = putPx(obj.height);
+			}).then(function(svgData) {
+				return encode(svgData, options, baseName);
+			}).then(function(obj) {
+				return getDimensions(obj);
+			})
+			.then(function(obj) {
 
-				}
 				data.allClasses += ", ." + obj.className;
 				if(data.allClasses.indexOf(", ") === 0) {
 					data.allClasses = data.allClasses.substring(2, data.allClasses.length);
@@ -166,22 +184,20 @@ module.exports = function(grunt) {
 		});
 
 		filesSvg.forEach(function(file) {
-
-			result = result.then(function() {
-				if(options.svg) {
-					svgToTemplate(file, options, svgData);
-				}
-			}).then(function() {
-
-				if(options.png) {
+			if(options.svg) {
+				result = result.then(function() {
+					return svgToTemplate(file, options, svgData);
+				});
+			}
+			if(options.png) {
+				result = result.then(function() {
 					return svgToPng(file);
-				}
-
-			});
-
+				});
+			}
 		});
 
 		return result.then(function() {
+
 			if(options.svg && filesSvg.length !== 0) {
 				grunt.log.writeln("Writing svg template.");
 				options.templateFileSvg = checkTemplateFile(options.templateFileSvg);

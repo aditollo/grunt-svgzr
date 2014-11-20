@@ -244,6 +244,8 @@ grunt.initConfig({
 
 ## Release History
 
+0.3.2 Minor fixes.
+
 0.3.1 Added option options.svgo to enable or disable svgo and minified svg.
 
 0.3.0 Added svgo and minified svg; introduced promises system [q](http://gruntjs.com/); changed encoding system from base64 to uri. Some studies have shown that it is better, especially if the site use gzip compression. You can still choose base64 with options.encodeType. ATTENTION: the basic svgTemplate file is changed.
