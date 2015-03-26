@@ -244,6 +244,8 @@ grunt.initConfig({
 
 ## Release History
 
+0.3.3 Now Mustache will be used with npm and not from local; added object named "fallback" with fallbacks mustache variables, for svg template management; also added variable "fileName", like in fallback template.
+
 0.3.2 Minor fixes.
 
 0.3.1 Added option options.svgo to enable or disable svgo and minified svg.

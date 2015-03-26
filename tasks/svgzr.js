@@ -133,6 +133,11 @@ module.exports = function(grunt) {
 				return encode(svgData, options, baseName);
 			}).then(function(obj) {
 				return getDimensions(obj);
+			}).then(function(obj) {
+				if(options.fallback) {
+					obj.fileName = baseName;
+				}
+				return obj;
 			})
 			.then(function(obj) {
 
@@ -171,6 +176,7 @@ module.exports = function(grunt) {
 		if(!options.svg && !options.png){
 			return result;
 		}
+
 		var filesSvg = grunt.file.expandMapping(['*.svg'], options.files.cwdPng, {
 			cwd: options.files.cwdSvg,
 			ext: '.png',
@@ -199,6 +205,15 @@ module.exports = function(grunt) {
 		return result.then(function() {
 
 			if(options.svg && filesSvg.length !== 0) {
+				if(options.png && options.fallback) {
+					svgData.fallback = {
+						dir: options.fallback.dir,
+						lastDir: path.basename(options.fallback.dir),
+						ext: '.png',
+						mixinName: options.fallback.mixinName
+
+					};
+				}
 				grunt.log.writeln("Writing svg template.");
 				options.templateFileSvg = checkTemplateFile(options.templateFileSvg);
 				var rendered = Mustache.render(options.templateFileSvg, svgData);
