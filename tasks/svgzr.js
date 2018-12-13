@@ -25,6 +25,8 @@ module.exports = function(grunt) {
 	var SvgoLib = require('svgo');
 	var svgo;
 	var Q = require('q');
+	const fs = require("pn/fs"); // https://www.npmjs.com/package/pn
+	const mkdirp = require("mkdirp"); // https://www.npmjs.com/package/pn
 
 	var putPx = function(dimension) {
 		if (typeof dimension !== 'undefined') {
@@ -55,27 +57,32 @@ module.exports = function(grunt) {
 	var svgToPng = function(file) {
 		return  Q.Promise(function(resolve, reject, notify) {
 			var srcPath = file.src[0];
-			svg2png(srcPath, file.dest, function (err) {
-				if( err ){
-					reject(err);
-				}
-				else {
+			fs.readFile(srcPath)
+				.then(svg2png)
+				.then(buffer => {
+					return new Promise((res, rej) => mkdirp(path.dirname(file.dest), (err, made) => err === null ? res(buffer) : reject(err)));
+				})
+				.then(buffer => fs.writeFile(file.dest, buffer))
+				.then((result) => {
 					grunt.log.writeln('image converted to \"' + file.dest + '\".');
 					resolve(file);
-				}
-			});
+				})
+				.catch(err => {
+					reject(err);
+				})
+			;
 		});
 	};
 
 	var svgMin = function(source) {
 		return  Q.Promise(function(resolve, reject, notify) {
 			if(svgo) {
-				svgo.optimize(source, function (result) {
+				svgo.optimize(source).then(function (result) {
 					if (result.error) {
 						grunt.warn('Minify: error parsing SVG:', result.error);
 						reject();
 					}
-					resolve(result.data) ;
+					resolve(result.data);
 				});
 			}
 			else {

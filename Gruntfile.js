@@ -25,7 +25,7 @@
 
 		// Before generating any new files, remove any previously-created files.
 		clean: {
-			tests: ['tmp', 'example/sass','example/sprite']
+			tests: ['tmp', 'example/sass','example/sprite', 'test/result/**']
 		},
 
 		// Configuration to be run (and then tested).
