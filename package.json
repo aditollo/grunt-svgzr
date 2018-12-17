@@ -21,7 +21,7 @@
     }
   ],
   "engines": {
-    "node": ">= 6"
+    "node": ">= 6.4.0"
   },
   "scripts": {
     "test": "grunt test",
@@ -38,10 +38,9 @@
   },
   "dependencies": {
     "mustache": ">= 2.2.1",
-    "q": ">= 1.1.1",
-    "svg2png": ">= 1.1.0",
-    "svgo": ">= 1.0.0",
-    "xml2js": ">= 0.4.19"
+    "svg2png": "^4.0.0",
+    "svgo": "^1.0.0",
+    "xml2js": "^0.4.19"
   },
   "keywords": [
     "gruntplugin"

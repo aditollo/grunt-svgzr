@@ -24,7 +24,6 @@ module.exports = function(grunt) {
 	var Mustache = require('mustache');
 	var SvgoLib = require('svgo');
 	var svgo;
-	var Q = require('q');
 	const fs = require("pn/fs"); // https://www.npmjs.com/package/pn
 	const mkdirp = require("mkdirp"); // https://www.npmjs.com/package/pn
 
@@ -55,7 +54,7 @@ module.exports = function(grunt) {
 	};
 
 	var svgToPng = function(file) {
-		return  Q.Promise(function(resolve, reject, notify) {
+		return  new Promise(function(resolve, reject) {
 			var srcPath = file.src[0];
 			fs.readFile(srcPath)
 				.then(svg2png)
@@ -75,7 +74,7 @@ module.exports = function(grunt) {
 	};
 
 	var svgMin = function(source) {
-		return  Q.Promise(function(resolve, reject, notify) {
+		return  new Promise(function(resolve, reject) {
 			if(svgo) {
 				svgo.optimize(source).then(function (result) {
 					if (result.error) {
@@ -92,7 +91,7 @@ module.exports = function(grunt) {
 	};
 
 	var getDimensions = function(obj) {
-		return  Q.Promise(function(resolve, reject, notify) {
+		return  new Promise(function(resolve, reject) {
 			parseString(obj.originalSvg, function (err, result) {
 				obj.width = putPx(result.svg.$.width);
 				obj.height = putPx(result.svg.$.height);
@@ -103,7 +102,7 @@ module.exports = function(grunt) {
 	};
 
 	var encode = function(svgData, options, baseName) {
-		return  Q.Promise(function(resolve, reject, notify) {
+		return  new Promise(function(resolve, reject) {
 			var obj = {
 				className: options.prefix + baseName,
 				size: "",
@@ -134,7 +133,7 @@ module.exports = function(grunt) {
 			.then(function(result) {
 				grunt.log.writeln(baseName + ' minified. Saved ' + Math.round((srcSvg.length - result.length)/ srcSvg.length * 100) + '%.');
 				return result;
-			}).fail(function() {
+			}).catch(function() {
 				return srcSvg;
 			}).then(function(svgData) {
 				return encode(svgData, options, baseName);
@@ -178,7 +177,7 @@ module.exports = function(grunt) {
 			allClasses: ""
 		};
 
-		var result = Q.fcall(function() {  });
+		var result = Promise.resolve();
 
 		if(!options.svg && !options.png){
 			return result;
@@ -226,7 +225,7 @@ module.exports = function(grunt) {
 				var rendered = Mustache.render(options.templateFileSvg, svgData);
 				grunt.file.write(options.svg.destFile, rendered);
 			}
-		}).fail(function(err) {
+		}).catch(function(err) {
 			grunt.fatal( err );
 		});
 
@@ -314,7 +313,7 @@ module.exports = function(grunt) {
 				if(options.fallback) {
 					createFallback(options);
 				}
-			}).done(options.done);
+			}).then(options.done);
 
 
 
